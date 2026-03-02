@@ -1,0 +1,9 @@
+[submodule "third_party/co-tracker"]
+	path = third_party/co-tracker
+	url = https://github.com/facebookresearch/co-tracker
+[submodule "third_party/FoundationStereo"]
+	path = third_party/FoundationStereo
+	url = https://github.com/NVlabs/FoundationStereo
+[submodule "third_party/vggt"]
+	path = third_party/vggt
+	url = https://github.com/facebookresearch/vggt

@@ -1,0 +1,11 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# urdfpy runtime dependencies installed separately to avoid resolver conflict
+# between urdfpy's pinned networkx==2.2 metadata and scikit-image>=0.24.
+
+networkx==3.4.2
+pycollada==0.6
+pyrender>=0.1.20
+lxml
+six

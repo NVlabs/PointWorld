@@ -1,0 +1,33 @@
+corr_implementation: reg
+corr_levels: 2
+corr_radius: 4
+finetune_ckpt_name: model_best_bp2.pth
+finetune_from: null
+hidden_dims:
+- 128
+- 128
+- 128
+img_gamma: null
+vit_size: vitl
+inference_tile: 0
+low_memory: 0
+max_disp: 416
+max_val_sample: null
+mixed_precision: true
+n_downsample: 2
+n_gru_layers: 3
+notes: ''
+num_steps: 200000
+num_worker: 8
+slow_fast_gru: false
+tags_more: []
+tile_min_overlap:
+- 16
+- 16
+tile_wtype: gaussian
+time_limit: 14400
+train_iters: 22
+val_interval: 1
+valid_iters: 32
+wdecay: 0
+world_size: 32

@@ -1,0 +1,61 @@
+# syntax=docker/dockerfile:1.7-labs
+
+# Pinned from stanfordvl/omnigibson:main as inspected on 2026-02-26.
+ARG OMNIGIBSON_BASE=stanfordvl/omnigibson:main@sha256:49e35b42790f75cd5bb3c6cbaf656a4cbf0a712d21b4a2e923822b0fa2eea76a
+FROM ${OMNIGIBSON_BASE}
+
+# Pinned to official BEHAVIOR-1K v3.7.2 tag commit.
+ARG BEHAVIOR_1K_COMMIT=88454bd04f75dc57c00ab1f1a00bcde1ff505950
+# 1 = include OG dataset/assets in image; 0 = lean image (dataset provided externally at runtime)
+ARG INSTALL_BEHAVIOR_DATASET=0
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    OMNI_KIT_ACCEPT_EULA=YES
+
+RUN python -m pip install --upgrade pip && \
+    python -m pip install pillow==11.0.0 omegaconf==2.3.0 hydra-core==1.3.2
+
+# Fetch an immutable BEHAVIOR-1K snapshot.
+RUN git init /BEHAVIOR-1K && \
+    git -C /BEHAVIOR-1K remote add origin https://github.com/StanfordVL/BEHAVIOR-1K.git && \
+    git -C /BEHAVIOR-1K fetch --depth 1 origin ${BEHAVIOR_1K_COMMIT} && \
+    git -C /BEHAVIOR-1K checkout FETCH_HEAD
+
+RUN python - <<'PY'
+from pathlib import Path
+
+path = Path("/BEHAVIOR-1K/setup.sh")
+text = path.read_text()
+old = """    # Check for conflicting environment variables
+    if [[ -n "$EXP_PATH" || -n "$CARB_APP_PATH" || -n "$ISAAC_PATH" ]]; then
+        echo "ERROR: Found existing Isaac Sim environment variables."
+        echo "Please unset EXP_PATH, CARB_APP_PATH, and ISAAC_PATH and restart."
+        exit 1
+    fi
+"""
+new = """    # Docker image already provides a valid Isaac Sim environment.
+    # Keep container-provided Isaac env variables intact here.
+"""
+if old not in text:
+    raise RuntimeError("Expected Isaac env-guard block not found in /BEHAVIOR-1K/setup.sh")
+cffi_old = """    # Force reinstall cffi 1.17.1 to resolve compatibility issues with Isaac Sim extensions
+    pip install --force-reinstall cffi==1.17.1
+"""
+cffi_new = """    # Keep base-image cffi pinned by Isaac Sim bundles to avoid runtime ABI mismatch.
+"""
+text = text.replace(old, new, 1)
+if cffi_old not in text:
+    raise RuntimeError("Expected cffi reinstall block not found in /BEHAVIOR-1K/setup.sh")
+path.write_text(text.replace(cffi_old, cffi_new, 1))
+PY
+
+RUN cd /BEHAVIOR-1K && \
+    chmod +x ./setup.sh && \
+    if [ "${INSTALL_BEHAVIOR_DATASET}" = "1" ]; then \
+      /bin/bash -lc "./setup.sh --bddl --omnigibson --dataset --accept-nvidia-eula --accept-dataset-tos --confirm-no-conda"; \
+    else \
+      /bin/bash -lc "./setup.sh --bddl --omnigibson --accept-nvidia-eula --confirm-no-conda"; \
+    fi
+
+WORKDIR /workspace/point-world
