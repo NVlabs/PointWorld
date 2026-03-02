@@ -1,0 +1,1798 @@
+<?xml version="1.0" ?>
+<robot name="R1Pro">
+    <link name="base_link">
+        <inertial>
+            <origin xyz="-0.049262 -8.8054E-05 0.18255" rpy="0 0 0" />
+            <mass value="47.63" />
+            <inertia ixx="1.5812" ixy="-1.0625E-05" ixz="0.053601" iyy="1.4648" iyz="5.7054E-06" izz="2.835" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/base_link.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="base_link-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/base_link-col-0.obj" scale="0.10779205116738665 0.39069479122022344 0.11333975494569959" />
+            </geometry>
+        </collision>
+        <collision name="base_link-col-1">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/base_link-col-1.obj" scale="0.07737861709370342 0.6348658100080211 0.11333995609740821" />
+            </geometry>
+        </collision>
+        <collision name="base_link-col-2">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/base_link-col-2.obj" scale="0.21354888018505033 0.4071552215146542 0.1663754095925566" />
+            </geometry>
+        </collision>
+        <collision name="base_link-col-3">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/base_link-col-3.obj" scale="0.17178351886875046 0.26555221714541627 0.3162041496767154" />
+            </geometry>
+        </collision>
+        <collision name="base_link-col-4">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/base_link-col-4.obj" scale="0.2517672526864172 0.539452906249942 0.3175607494809012" />
+            </geometry>
+        </collision>
+        <collision name="base_link-col-5">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/base_link-col-5.obj" scale="0.2134698180780272 0.27667800795579045 0.16578723743039037" />
+            </geometry>
+        </collision>
+        <collision name="base_link-col-6">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/base_link-col-6.obj" scale="0.17178263386628068 0.15308592450766678 0.37538203694060535" />
+            </geometry>
+        </collision>
+        <collision name="base_link-col-7">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/base_link-col-7.obj" scale="0.187963671252105 0.2654080498539402 0.3161541865285755" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="steer_motor_link1">
+        <inertial>
+            <origin xyz="7.7174E-06 -0.004623 -0.049428" rpy="0 0 0" />
+            <mass value="1.5" />
+            <inertia ixx="0.00022164" ixy="-3.529E-09" ixz="3.4267E-09" iyy="0.00032908" iyz="-7.5872E-08" izz="0.00015872" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/steer_motor_link1.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+    </link>
+    <joint name="steer_motor_joint1" type="revolute">
+        <origin xyz="0.16897 0.28 0.15765" rpy="0 0 0" />
+        <parent link="base_link" />
+        <child link="steer_motor_link1" />
+        <axis xyz="0 0 1" />
+        <limit lower="-3.1416" upper="3.1416" effort="50" velocity="20" />
+    </joint>
+    <link name="wheel_motor_link1">
+        <inertial>
+            <origin xyz="1.6481E-10 -1.6203E-10 -9.455E-10" rpy="0 0 0" />
+            <mass value="1.5" />
+            <inertia ixx="0.0012628" ixy="1.0701E-10" ixz="5.7971E-09" iyy="0.0020893" iyz="1.2406E-09" izz="0.0012628" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/wheel_motor_link1.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="wheel_motor_link1-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/wheel_motor_link1-col-0.obj" scale="0.13796314907722967 0.055400192737579346 0.14001634969342042" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="wheel_motor_joint1" type="continuous">
+        <origin xyz="0 0 -0.08765" rpy="0 0 0" />
+        <parent link="steer_motor_link1" />
+        <child link="wheel_motor_link1" />
+        <axis xyz="0 1 0" />
+    </joint>
+    <link name="steer_motor_link2">
+        <inertial>
+            <origin xyz="6.044E-06 0.00010023 -0.052223" rpy="0 0 0" />
+            <mass value="1.5" />
+            <inertia ixx="0.0002535" ixy="-4.9113E-09" ixz="5.8918E-09" iyy="0.00037037" iyz="-2.9177E-07" izz="0.000163" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/steer_motor_link2.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+    </link>
+    <joint name="steer_motor_joint2" type="revolute">
+        <origin xyz="0.16897 -0.28 0.15765" rpy="0 0 0" />
+        <parent link="base_link" />
+        <child link="steer_motor_link2" />
+        <axis xyz="0 0 1" />
+        <limit lower="-3.1416" upper="3.1416" effort="50" velocity="20" />
+    </joint>
+    <link name="wheel_motor_link2">
+        <inertial>
+            <origin xyz="1.6448E-10 -1.616E-10 -9.4549E-10" rpy="0 0 0" />
+            <mass value="1.5" />
+            <inertia ixx="0.0012628" ixy="1.0701E-10" ixz="5.7971E-09" iyy="0.0020893" iyz="1.2406E-09" izz="0.0012628" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/wheel_motor_link2.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="wheel_motor_link2-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/wheel_motor_link2-col-0.obj" scale="0.13796253669010378 0.05620063686334515 0.1408618802354496" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="wheel_motor_joint2" type="continuous">
+        <origin xyz="0 0 -0.08765" rpy="0 0 0" />
+        <parent link="steer_motor_link2" />
+        <child link="wheel_motor_link2" />
+        <axis xyz="0 1 0" />
+    </joint>
+    <link name="steer_motor_link3">
+        <inertial>
+            <origin xyz="-6.029E-06 -0.00010167 -0.052221" rpy="0 0 0" />
+            <mass value="1.5" />
+            <inertia ixx="0.0002535" ixy="-4.6767E-09" ixz="-3.5903E-09" iyy="0.00037036" iyz="2.9246E-07" izz="0.000163" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/steer_motor_link3.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+    </link>
+    <joint name="steer_motor_joint3" type="revolute">
+        <origin xyz="-0.32703 0 0.15765" rpy="0 0 0" />
+        <parent link="base_link" />
+        <child link="steer_motor_link3" />
+        <axis xyz="0 0 1" />
+        <limit lower="-3.1416" upper="3.1416" effort="50" velocity="20" />
+    </joint>
+    <link name="wheel_motor_link3">
+        <inertial>
+            <origin xyz="-2.443E-09 1.4779E-12 5.1754E-12" rpy="0 0 0" />
+            <mass value="1.5" />
+            <inertia ixx="0.0012628" ixy="1.1439E-10" ixz="5.7894E-09" iyy="0.0020893" iyz="1.2052E-09" izz="0.0012628" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/wheel_motor_link3.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="wheel_motor_link3-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/wheel_motor_link3-col-0.obj" scale="0.13902151476791194 0.05540020837794922 0.14043972610832894" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="wheel_motor_joint3" type="continuous">
+        <origin xyz="0 0 -0.08765" rpy="0 0 0" />
+        <parent link="steer_motor_link3" />
+        <child link="wheel_motor_link3" />
+        <axis xyz="0 1 0" />
+    </joint>
+    <link name="torso_link1">
+        <inertial>
+            <origin xyz="0.00065636 0.0032244 0.23142" rpy="0 0 0" />
+            <mass value="5.72" />
+            <inertia ixx="0.10931" ixy="7.7894E-06" ixz="-0.00017473" iyy="0.10736" iyz="0.00013778" izz="0.0081222" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/torso_link1.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="torso_link1-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/torso_link1-col-0.obj" scale="0.13338474578443846 0.13162610541551972 0.13029597665177461" />
+            </geometry>
+        </collision>
+        <collision name="torso_link1-col-1">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/torso_link1-col-1.obj" scale="0.08348677819261519 0.04416797865754743 0.18518490259516263" />
+            </geometry>
+        </collision>
+        <collision name="torso_link1-col-2">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/torso_link1-col-2.obj" scale="0.13437310548508347 0.1865575769034821 0.1286336355512849" />
+            </geometry>
+        </collision>
+        <collision name="torso_link1-col-3">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/torso_link1-col-3.obj" scale="0.08160970334320772 0.043694347240888456 0.045918873937403015" />
+            </geometry>
+        </collision>
+        <collision name="torso_link1-col-4">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/torso_link1-col-4.obj" scale="0.05338608309872798 0.17250384226794385 0.09518674873498797" />
+            </geometry>
+        </collision>
+        <collision name="torso_link1-col-5">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/torso_link1-col-5.obj" scale="0.02823264984339552 0.07814311595453216 0.00653543878339069" />
+            </geometry>
+        </collision>
+        <collision name="torso_link1-col-6">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/torso_link1-col-6.obj" scale="0.029644288074638023 0.11522907030526511 0.09518186149995447" />
+            </geometry>
+        </collision>
+        <collision name="torso_link1-col-7">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/torso_link1-col-7.obj" scale="0.08348674690438407 0.1077468121744496 0.28037833368635423" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="torso_joint1" type="revolute">
+        <origin xyz="-0.079032 0 0.34265" rpy="0 0 0" />
+        <parent link="base_link" />
+        <child link="torso_link1" />
+        <axis xyz="0 1 0" />
+        <limit lower="-1.1345" upper="1.8326" effort="100" velocity="2.5" />
+    </joint>
+    <link name="torso_link2">
+        <inertial>
+            <origin xyz="0.0052517 0.014411 0.15711" rpy="0 0 0" />
+            <mass value="3.5" />
+            <inertia ixx="0.026081" ixy="-3.3436E-07" ixz="0.00024541" iyy="0.027574" iyz="4.2283E-07" izz="0.0018515" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/torso_link2.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="torso_link2-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/torso_link2-col-0.obj" scale="0.12500143178468137 0.183164611907018 0.42572411369809393" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="torso_joint2" type="revolute">
+        <origin xyz="0 0 0.4" rpy="0 0 0" />
+        <parent link="torso_link1" />
+        <child link="torso_link2" />
+        <axis xyz="0 1 0" />
+        <limit lower="-2.7925" upper="2.5307" effort="100" velocity="2.5" />
+    </joint>
+    <link name="torso_link3">
+        <inertial>
+            <origin xyz="-9.8337E-07 -0.0055146 0.020182" rpy="0 0 0" />
+            <mass value="3.4" />
+            <inertia ixx="0.0016099" ixy="3.5899E-07" ixz="2.5497E-07" iyy="0.0023011" iyz="1.367E-05" izz="0.0017027" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/torso_link3.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="torso_link3-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/torso_link3-col-0.obj" scale="0.1256220190255957 0.13454747216388652 0.18761261127868306" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="torso_joint3" type="revolute">
+        <origin xyz="0 0.0001005 0.3" rpy="0 0 0" />
+        <parent link="torso_link2" />
+        <child link="torso_link3" />
+        <axis xyz="0 -1 0" />
+        <limit lower="-1.8326" upper="1.5708" effort="100" velocity="2.5" />
+    </joint>
+    <link name="torso_link4">
+        <inertial>
+            <origin xyz="0.0049601 -1.2497E-05 0.21237" rpy="0 0 0" />
+            <mass value="5" />
+            <inertia ixx="0.026836" ixy="1.3048E-05" ixz="-0.00014074" iyy="0.013023" iyz="4.6641E-07" izz="0.021541" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/torso_link4.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="torso_link4-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/torso_link4-col-0.obj" scale="0.19339660586471816 0.26172948604027746 0.1124384824620539" />
+            </geometry>
+        </collision>
+        <collision name="torso_link4-col-1">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/torso_link4-col-1.obj" scale="0.10076235528081154 0.3568286628765178 0.4266864484215783" />
+            </geometry>
+        </collision>
+        <collision name="torso_link4-col-2">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/torso_link4-col-2.obj" scale="0.1895883580994831 0.1580703418258419 0.4221032458308802" />
+            </geometry>
+        </collision>
+        <collision name="torso_link4-col-3">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/torso_link4-col-3.obj" scale="0.01014947088575524 0.04900778806274375 0.001250407924962671" />
+            </geometry>
+        </collision>
+        <collision name="torso_link4-col-4">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/torso_link4-col-4.obj" scale="0.10267241160365771 0.3566406432961389 0.39892822614263657" />
+            </geometry>
+        </collision>
+        <collision name="torso_link4-col-5">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/torso_link4-col-5.obj" scale="0.17005297529611985 0.10307763331439457 0.17516143076154564" />
+            </geometry>
+        </collision>
+        <collision name="torso_link4-col-6">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/torso_link4-col-6.obj" scale="0.02281596232873051 0.01479063912840098 0.05918883190544011" />
+            </geometry>
+        </collision>
+        <collision name="torso_link4-col-7">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/torso_link4-col-7.obj" scale="0.09746784868799349 0.15273449435855244 0.2928698342528116" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="torso_joint4" type="revolute">
+        <origin xyz="0 -0.00010015 0.09962" rpy="0 0 0" />
+        <parent link="torso_link3" />
+        <child link="torso_link4" />
+        <axis xyz="0 0 1" />
+        <limit lower="-3.0543" upper="3.0543" effort="100" velocity="2.5" />
+    </joint>
+    <link name="zed_link">
+        <inertial>
+            <origin xyz="0.060004 0.015906 -0.068413" rpy="0 0 0" />
+            <mass value="2.05" />
+            <inertia ixx="0.010375" ixy="1.8965E-07" ixz="1.3342E-08" iyy="0.014618" iyz="0.00028961" izz="0.012229" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/zed_link.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="zed_link-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/zed_link-col-0.obj" scale="0.20096683479493105 0.1719633850174202 0.17579610297974507" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="zed_joint" type="fixed">
+        <origin xyz="0.065511 0.060003 0.47598" rpy="-1.9199 0 -1.5708" />
+        <parent link="torso_link4" />
+        <child link="zed_link" />
+        <axis xyz="0 0 0" />
+    </joint>
+    <link name="left_arm_base_link">
+        <inertial>
+            <origin xyz="0.00026981 0.034587 1.3734E-08" rpy="0 0 0" />
+            <mass value="1.48" />
+            <inertia ixx="0.0010298" ixy="5.2194E-06" ixz="-1.2182E-07" iyy="0.0014076" iyz="-3.9334E-09" izz="0.0010201" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/left_arm_base_link.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+    </link>
+    <joint name="left_arm_base_joint" type="fixed">
+        <origin xyz="-0.00048618 0.097234 0.30302" rpy="0 0 0" />
+        <parent link="torso_link4" />
+        <child link="left_arm_base_link" />
+        <axis xyz="0 0 0" />
+    </joint>
+    <link name="left_arm_link1">
+        <inertial>
+            <origin xyz="0.00042258 0.074131 7.9156E-05" rpy="0 0 0" />
+            <mass value="1.135" />
+            <inertia ixx="0.00061603" ixy="-1.1635E-06" ixz="-6.9725E-07" iyy="0.00030259" iyz="-6.2894E-07" izz="0.00047136" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/left_arm_link1.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="left_arm_link1-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link1-col-0.obj" scale="0.04939293174315021 0.13175868709632144 0.10101450547049316" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="left_arm_joint1" type="revolute">
+        <origin xyz="0 0.0735 0" rpy="0 0 0" />
+        <parent link="left_arm_base_link" />
+        <child link="left_arm_link1" />
+        <axis xyz="0 1 0" />
+        <limit lower="-4.4506" upper="1.3090" effort="55" velocity="7.1209" />
+    </joint>
+    <link name="left_arm_link2">
+        <inertial>
+            <origin xyz="-0.026826 -0.0040392 -0.031835" rpy="0 0 0" />
+            <mass value="0.92" />
+            <inertia ixx="0.00037378" ixy="-7.5909E-07" ixz="2.9042E-06" iyy="0.00033872" iyz="1.2166E-05" izz="0.00032361" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/left_arm_link2.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="left_arm_link2-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link2-col-0.obj" scale="0.05594567965469714 0.03126514989347817 0.05612164599963662" />
+            </geometry>
+        </collision>
+        <collision name="left_arm_link2-col-1">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link2-col-1.obj" scale="0.034243842422802755 0.06947839523261284 0.11912495649614493" />
+            </geometry>
+        </collision>
+        <collision name="left_arm_link2-col-2">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link2-col-2.obj" scale="0.06523469232671084 0.03200019487280789 0.09260123105659238" />
+            </geometry>
+        </collision>
+        <collision name="left_arm_link2-col-3">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link2-col-3.obj" scale="0.03436804440072683 0.08210527978691903 0.15014657361694117" />
+            </geometry>
+        </collision>
+        <collision name="left_arm_link2-col-4">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link2-col-4.obj" scale="0.007073455715616017 0.010539330912878148 0.01279904739847576" />
+            </geometry>
+        </collision>
+        <collision name="left_arm_link2-col-5">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link2-col-5.obj" scale="0.030693659983931365 0.06638202676153156 0.14194927010793512" />
+            </geometry>
+        </collision>
+        <collision name="left_arm_link2-col-6">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link2-col-6.obj" scale="0.031026547661789156 0.06559657665423962 0.14537768811646973" />
+            </geometry>
+        </collision>
+        <collision name="left_arm_link2-col-7">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link2-col-7.obj" scale="0.030828120669570844 0.057975826022544585 0.06658285138439612" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="left_arm_joint2" type="revolute">
+        <origin xyz="0.025012 0.081265 0" rpy="0 0 0" />
+        <parent link="left_arm_link1" />
+        <child link="left_arm_link2" />
+        <axis xyz="1 0 0" />
+        <limit lower="-0.1745" upper="3.1416" effort="55" velocity="7.1209" />
+    </joint>
+    <link name="left_arm_link3">
+        <inertial>
+            <origin xyz="0.0053849 -0.00086892 -0.1126" rpy="0 0 0" />
+            <mass value="1.245" />
+            <inertia ixx="0.00072339" ixy="-3.3477E-06" ixz="-0.00012824" iyy="0.00073856" iyz="-8.3574E-06" izz="0.00037352" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/left_arm_link3.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="left_arm_link3-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link3-col-0.obj" scale="0.049994124891885 0.03220458187872577 0.20338193189363737" />
+            </geometry>
+        </collision>
+        <collision name="left_arm_link3-col-1">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link3-col-1.obj" scale="0.036862907865787636 0.07396904354495645 0.2549463948817792" />
+            </geometry>
+        </collision>
+        <collision name="left_arm_link3-col-2">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link3-col-2.obj" scale="0.04630019703586702 0.03460627127133983 0.197181402360936" />
+            </geometry>
+        </collision>
+        <collision name="left_arm_link3-col-3">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link3-col-3.obj" scale="0.025986635715914395 0.0782955757720655 0.07332030012274549" />
+            </geometry>
+        </collision>
+        <collision name="left_arm_link3-col-4">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link3-col-4.obj" scale="0.052232361689758464 0.03809470294962358 0.22811841044883133" />
+            </geometry>
+        </collision>
+        <collision name="left_arm_link3-col-5">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link3-col-5.obj" scale="0.023120190949050684 0.05552422136547874 0.18116616617235282" />
+            </geometry>
+        </collision>
+        <collision name="left_arm_link3-col-6">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link3-col-6.obj" scale="0.05183257117408794 0.06734862931970899 0.02161323715850838" />
+            </geometry>
+        </collision>
+        <collision name="left_arm_link3-col-7">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link3-col-7.obj" scale="0.06233186639846087 0.012050182104773904 0.030113245577163102" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="left_arm_joint3" type="revolute">
+        <origin xyz="-0.025012 0 -0.1155" rpy="0 0 0" />
+        <parent link="left_arm_link2" />
+        <child link="left_arm_link3" />
+        <axis xyz="0 0 1" />
+        <limit lower="-2.356196" upper="2.356196" effort="25" velocity="8.3776" />
+    </joint>
+    <link name="left_arm_link4">
+        <inertial>
+            <origin xyz="-0.0011018 -0.036243 -0.042164" rpy="0 0 0" />
+            <mass value="0.827" />
+            <inertia ixx="0.00013884" ixy="7.8394E-08" ixz="3.5926E-06" iyy="0.00019751" iyz="1.4227E-06" izz="0.00010229" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/left_arm_link4.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="left_arm_link4-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link4-col-0.obj" scale="0.08557260098230354 0.09003981840956304 0.15057006673599255" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="left_arm_joint4" type="revolute">
+        <origin xyz="0 0.035065 -0.1945" rpy="0 0 0" />
+        <parent link="left_arm_link3" />
+        <child link="left_arm_link4" />
+        <axis xyz="0 1 0" />
+        <limit lower="-1.7453" upper="0.3491" effort="25" velocity="8.3776" />
+    </joint>
+    <link name="left_arm_link5">
+        <inertial>
+            <origin xyz="3.7881E-07 -0.0028035 -0.062981" rpy="0 0 0" />
+            <mass value="0.939" />
+            <inertia ixx="0.00070496" ixy="1.4329E-08" ixz="-2.9036E-09" iyy="0.00067006" iyz="-5.1951E-05" izz="0.00032998" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/left_arm_link5.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="left_arm_link5-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link5-col-0.obj" scale="0.053838072719458605 0.05346950558532332 0.03797263325004957" />
+            </geometry>
+        </collision>
+        <collision name="left_arm_link5-col-1">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link5-col-1.obj" scale="0.028438783028259276 0.051348646781330685 0.10657770626724491" />
+            </geometry>
+        </collision>
+        <collision name="left_arm_link5-col-2">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link5-col-2.obj" scale="0.07445466484809207 0.015282384701220933 0.12275654733915038" />
+            </geometry>
+        </collision>
+        <collision name="left_arm_link5-col-3">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link5-col-3.obj" scale="0.06562287871883088 0.016716124644238023 0.17000675670150053" />
+            </geometry>
+        </collision>
+        <collision name="left_arm_link5-col-4">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link5-col-4.obj" scale="0.04373474850066469 0.03586624767969196 0.010955061463011936" />
+            </geometry>
+        </collision>
+        <collision name="left_arm_link5-col-5">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link5-col-5.obj" scale="0.06812370969572226 0.017253147268455227 0.09606605387583586" />
+            </geometry>
+        </collision>
+        <collision name="left_arm_link5-col-6">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link5-col-6.obj" scale="0.02081754420801671 0.05137475084671552 0.10667295041509392" />
+            </geometry>
+        </collision>
+        <collision name="left_arm_link5-col-7">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link5-col-7.obj" scale="0.049264399459546276 0.03716067527852826 0.11909105816150581" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="left_arm_joint5" type="revolute">
+        <origin xyz="0 -0.035065 -0.095" rpy="0 0 0" />
+        <parent link="left_arm_link4" />
+        <child link="left_arm_link5" />
+        <axis xyz="0 0 1" />
+        <limit lower="-2.356196" upper="2.356196" effort="18" velocity="10.4720" />
+    </joint>
+    <link name="left_arm_link6">
+        <inertial>
+            <origin xyz="0.0017919 0.027487 0.00025471" rpy="0 0 0" />
+            <mass value="0.527" />
+            <inertia ixx="8.5442E-05" ixy="-1.5351E-07" ixz="8.3797E-07" iyy="8.1186E-05" iyz="-2.1972E-08" izz="8.2736E-05" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/left_arm_link6.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="left_arm_link6-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link6-col-0.obj" scale="0.05851281747343492 0.06438420081726166 0.05900032789805849" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="left_arm_joint6" type="revolute">
+        <origin xyz="0 -0.028 -0.16305" rpy="0 0 0" />
+        <parent link="left_arm_link5" />
+        <child link="left_arm_link6" />
+        <axis xyz="0 1 0" />
+        <limit lower="-1.047198" upper="1.047198" effort="18" velocity="10.4720" />
+    </joint>
+    <link name="left_arm_link7">
+        <inertial>
+            <origin xyz="-0.022945 8.4007E-07 -0.056525" rpy="0 0 0" />
+            <mass value="0.185" />
+            <inertia ixx="4.2564E-05" ixy="-2.1577E-09" ixz="-6.9368E-06" iyy="4.5515E-05" iyz="-1.9389E-09" izz="4.7946E-05" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/left_arm_link7.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="left_arm_link7-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link7-col-0.obj" scale="0.05964157256165942 0.06239306629902931 0.041965983719502026" />
+            </geometry>
+        </collision>
+        <collision name="left_arm_link7-col-1">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link7-col-1.obj" scale="0.0267773726596231 0.012431627694103081 0.006528314629638432" />
+            </geometry>
+        </collision>
+        <collision name="left_arm_link7-col-2">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link7-col-2.obj" scale="0.01078596920953091 0.040014415984051754 0.02346608708962941" />
+            </geometry>
+        </collision>
+        <collision name="left_arm_link7-col-3">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link7-col-3.obj" scale="0.012607543822836421 0.04774732139139067 0.058303873664191326" />
+            </geometry>
+        </collision>
+        <collision name="left_arm_link7-col-4">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link7-col-4.obj" scale="0.013736054375890053 0.027506978071553848 0.0064698847031522955" />
+            </geometry>
+        </collision>
+        <collision name="left_arm_link7-col-5">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link7-col-5.obj" scale="0.009099818068090626 0.012587530174741738 0.01269982210327833" />
+            </geometry>
+        </collision>
+        <collision name="left_arm_link7-col-6">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link7-col-6.obj" scale="0.012530035591363134 0.026680479268292222 0.006534888286336276" />
+            </geometry>
+        </collision>
+        <collision name="left_arm_link7-col-7">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_arm_link7-col-7.obj" scale="0.025105693394987607 0.012388482945539014 0.00652831319540581" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="left_arm_joint7" type="revolute">
+        <origin xyz="0.0295 0.028 0" rpy="0 0 0" />
+        <parent link="left_arm_link6" />
+        <child link="left_arm_link7" />
+        <axis xyz="1 0 0" />
+        <limit lower="-1.5708" upper="1.5708" effort="18" velocity="10.4720" />
+    </joint>
+    <link name="left_gripper_link">
+        <inertial>
+            <origin xyz="-2.2589E-07 -5.2175E-08 0.031107" rpy="0 0 0" />
+            <mass value="0.24625" />
+            <inertia ixx="0.00016511" ixy="9.5318E-07" ixz="5.0942E-10" iyy="9.8651E-05" iyz="-1.8604E-10" izz="0.00017588" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/left_gripper_link.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="left_gripper_link-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_gripper_link-col-0.obj" scale="0.06189159027204702 0.11028488911593758 0.017664904153569017" />
+            </geometry>
+        </collision>
+        <collision name="left_gripper_link-col-1">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_gripper_link-col-1.obj" scale="0.0619635714823792 0.06770965948093896 0.055721291869145796" />
+            </geometry>
+        </collision>
+        <collision name="left_gripper_link-col-2">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_gripper_link-col-2.obj" scale="0.019220850356336056 0.02062108566517412 0.006936713862967958" />
+            </geometry>
+        </collision>
+        <collision name="left_gripper_link-col-3">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_gripper_link-col-3.obj" scale="0.011782286223040027 0.04900446629076976 0.00693860052168635" />
+            </geometry>
+        </collision>
+        <collision name="left_gripper_link-col-4">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_gripper_link-col-4.obj" scale="0.028352107870377025 0.01932730471133854 0.006888593031512875" />
+            </geometry>
+        </collision>
+        <collision name="left_gripper_link-col-5">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_gripper_link-col-5.obj" scale="0.028744224923042284 0.020205760674902373 0.006889254784010923" />
+            </geometry>
+        </collision>
+        <collision name="left_gripper_link-col-6">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_gripper_link-col-6.obj" scale="0.019256502556769584 0.02026695760274211 0.006924145376728086" />
+            </geometry>
+        </collision>
+        <collision name="left_gripper_link-col-7">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_gripper_link-col-7.obj" scale="0.012225164309327297 0.02242255565203887 0.006889151485798273" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="left_gripper_joint" type="fixed">
+        <origin xyz="-0.0295 0 -0.16065" rpy="0 0 0" />
+        <parent link="left_arm_link7" />
+        <child link="left_gripper_link" />
+        <axis xyz="0 0 0" />
+    </joint>
+    <link name="left_realsense_link">
+        <inertial>
+            <origin xyz="0.0058264 -0.02222 -0.017353" rpy="0 0 0" />
+            <mass value="0.042603" />
+            <inertia ixx="2.3234E-05" ixy="-2.801E-06" ixz="-1.4377E-06" iyy="7.0119E-06" iyz="-1.2674E-06" izz="2.5513E-05" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/left_realsense_link.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.8 0.8 0.8 1" />
+            </material>
+        </visual>
+        <collision name="left_realsense_link-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_realsense_link-col-0.obj" scale="0.01958843311937575 0.07919875090471871 0.017525750896777596" />
+            </geometry>
+        </collision>
+        <collision name="left_realsense_link-col-1">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_realsense_link-col-1.obj" scale="0.013941166267706933 0.08049637840116529 0.018090569731127878" />
+            </geometry>
+        </collision>
+        <collision name="left_realsense_link-col-2">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_realsense_link-col-2.obj" scale="0.018671276009373336 0.029731281328443517 0.027317878321057806" />
+            </geometry>
+        </collision>
+        <collision name="left_realsense_link-col-3">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_realsense_link-col-3.obj" scale="0.025688589390241486 0.012157303366780033 0.01810870094715352" />
+            </geometry>
+        </collision>
+        <collision name="left_realsense_link-col-4">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_realsense_link-col-4.obj" scale="0.02699658755650379 0.09147865376516262 0.014977148315422219" />
+            </geometry>
+        </collision>
+        <collision name="left_realsense_link-col-5">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_realsense_link-col-5.obj" scale="0.020552429215147522 0.031052150860299874 0.011164671834505271" />
+            </geometry>
+        </collision>
+        <collision name="left_realsense_link-col-6">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_realsense_link-col-6.obj" scale="0.027265246977014955 0.08149424186824193 0.008517622189243186" />
+            </geometry>
+        </collision>
+        <collision name="left_realsense_link-col-7">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_realsense_link-col-7.obj" scale="0.011670869236726666 0.01712432467125713 0.0037070968320540854" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="left_realsense_joint" type="fixed">
+        <origin xyz="0.05051 0.0028934 0.0051317" rpy="-3.1376 -0.43631 3.1399" />
+        <parent link="left_gripper_link" />
+        <child link="left_realsense_link" />
+        <axis xyz="0 0 0" />
+    </joint>
+    <link name="left_gripper_finger_link1">
+        <inertial>
+            <origin xyz="0.0056571 -0.015027 0.01959" rpy="0 0 0" />
+            <mass value="0.020196" />
+            <inertia ixx="6.4827E-06" ixy="7.3969E-08" ixz="-4.4977E-08" iyy="5.7129E-06" iyz="-3.9973E-07" izz="2.4057E-06" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/left_gripper_finger_link1.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="left_gripper_finger_link1-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_gripper_finger_link1-col-0.obj" scale="0.013865547990063095 0.03534938314303743 0.013874763773223721" />
+            </geometry>
+        </collision>
+        <collision name="left_gripper_finger_link1-col-1">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_gripper_finger_link1-col-1.obj" scale="0.013712712410127316 0.010566625925166218 0.021600381862136864" />
+            </geometry>
+        </collision>
+        <collision name="left_gripper_finger_link1-col-2">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_gripper_finger_link1-col-2.obj" scale="0.024864199579319735 0.011313633011349734 0.04767601190329705" />
+            </geometry>
+        </collision>
+        <collision name="left_gripper_finger_link1-col-3">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_gripper_finger_link1-col-3.obj" scale="0.014974739822315859 0.005262828389680507 0.021866141938257755" />
+            </geometry>
+        </collision>
+        <collision name="left_gripper_finger_link1-col-4">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_gripper_finger_link1-col-4.obj" scale="0.02980294283177876 0.019805487580308312 0.023229759857717684" />
+            </geometry>
+        </collision>
+        <collision name="left_gripper_finger_link1-col-5">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_gripper_finger_link1-col-5.obj" scale="0.018512171050194235 0.016303834876550072 0.005769206022705031" />
+            </geometry>
+        </collision>
+        <collision name="left_gripper_finger_link1-col-6">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_gripper_finger_link1-col-6.obj" scale="0.015690753604838292 0.009477927305053986 0.022859905451321785" />
+            </geometry>
+        </collision>
+        <collision name="left_gripper_finger_link1-col-7">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_gripper_finger_link1-col-7.obj" scale="0.024884061435132894 0.005813722100704598 0.05121456072853584" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="left_gripper_finger_joint1" type="prismatic">
+        <origin xyz="-8.8709E-05 0.013453 -0.03689" rpy="0 0 0" />
+        <parent link="left_gripper_link" />
+        <child link="left_gripper_finger_link1" />
+        <axis xyz="-0.0077873 0.99997 0" />
+        <limit lower="0" upper="0.05" effort="100" velocity="0.25" />
+    </joint>
+    <link name="left_gripper_finger_link2">
+        <inertial>
+            <origin xyz="-0.0056573 0.015027 0.01959" rpy="0 0 0" />
+            <mass value="0.020196" />
+            <inertia ixx="6.4827E-06" ixy="7.3965E-08" ixz="4.5014E-08" iyy="5.7129E-06" iyz="3.9974E-07" izz="2.4057E-06" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/left_gripper_finger_link2.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="left_gripper_finger_link2-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_gripper_finger_link2-col-0.obj" scale="0.014655100698618735 0.01595936774829166 0.02196047992594785" />
+            </geometry>
+        </collision>
+        <collision name="left_gripper_finger_link2-col-1">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_gripper_finger_link2-col-1.obj" scale="0.01339284170764199 0.00430587854638631 0.013227801581685128" />
+            </geometry>
+        </collision>
+        <collision name="left_gripper_finger_link2-col-2">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_gripper_finger_link2-col-2.obj" scale="0.013853023563711042 0.03514223367103614 0.013798770683080245" />
+            </geometry>
+        </collision>
+        <collision name="left_gripper_finger_link2-col-3">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_gripper_finger_link2-col-3.obj" scale="0.02983779675833246 0.008065750133942947 0.0701740708943901" />
+            </geometry>
+        </collision>
+        <collision name="left_gripper_finger_link2-col-4">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_gripper_finger_link2-col-4.obj" scale="0.027646633994106714 0.012805408554764983 0.05790177648950889" />
+            </geometry>
+        </collision>
+        <collision name="left_gripper_finger_link2-col-5">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_gripper_finger_link2-col-5.obj" scale="0.015581128871433592 0.011707827100195368 0.017282603390864543" />
+            </geometry>
+        </collision>
+        <collision name="left_gripper_finger_link2-col-6">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_gripper_finger_link2-col-6.obj" scale="0.03736671869911109 0.009449253968325855 0.009759799424023722" />
+            </geometry>
+        </collision>
+        <collision name="left_gripper_finger_link2-col-7">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/left_gripper_finger_link2-col-7.obj" scale="0.015120206576464143 0.011710054634705657 0.01726970618194841" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="left_gripper_finger_joint2" type="prismatic">
+        <origin xyz="8.9046E-05 -0.013453 -0.03689" rpy="0 0 0" />
+        <parent link="left_gripper_link" />
+        <child link="left_gripper_finger_link2" />
+        <axis xyz="0.0077873 -0.99997 0" />
+        <limit lower="0" upper="0.05" effort="100" velocity="0.25" />
+    </joint>
+    <link name="right_arm_base_link">
+        <inertial>
+            <origin xyz="-0.00026981 -0.034587 -3.669E-08" rpy="0 0 0" />
+            <mass value="1.48" />
+            <inertia ixx="0.0010298" ixy="5.2194E-06" ixz="1.2188E-07" iyy="0.0014076" iyz="5.1015E-09" izz="0.0010201" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/right_arm_base_link.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+    </link>
+    <joint name="right_arm_base_joint" type="fixed">
+        <origin xyz="-0.00048706 -0.097236 0.30302" rpy="0 0 0" />
+        <parent link="torso_link4" />
+        <child link="right_arm_base_link" />
+        <axis xyz="0 0 0" />
+    </joint>
+    <link name="right_arm_link1">
+        <inertial>
+            <origin xyz="-0.00042261 -0.074132 7.8365E-05" rpy="0 0 0" />
+            <mass value="1.135" />
+            <inertia ixx="0.00061603" ixy="-1.1635E-06" ixz="6.9785E-07" iyy="0.00030259" iyz="6.2359E-07" izz="0.00047135" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/right_arm_link1.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="right_arm_link1-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link1-col-0.obj" scale="0.04912914927184232 0.1332339508693294 0.10075102067931556" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="right_arm_joint1" type="revolute">
+        <origin xyz="0 -0.0735 0" rpy="0 0 0" />
+        <parent link="right_arm_base_link" />
+        <child link="right_arm_link1" />
+        <axis xyz="0 1 0" />
+        <limit lower="-4.4506" upper="1.3090" effort="55" velocity="7.1209" />
+    </joint>
+    <link name="right_arm_link2">
+        <inertial>
+            <origin xyz="-0.022361 0.0049527 -0.032732" rpy="0 0 0" />
+            <mass value="0.92" />
+            <inertia ixx="0.00038179" ixy="2.6532E-07" ixz="-3.6367E-06" iyy="0.00034188" iyz="-8.4407E-06" izz="0.00032895" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/right_arm_link2.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="right_arm_link2-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link2-col-0.obj" scale="0.07018786729837953 0.04113544725850585 0.05840982476209538" />
+            </geometry>
+        </collision>
+        <collision name="right_arm_link2-col-1">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link2-col-1.obj" scale="0.03397423165676752 0.11501664149447186 0.15015638872663864" />
+            </geometry>
+        </collision>
+        <collision name="right_arm_link2-col-2">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link2-col-2.obj" scale="0.03352453677125683 0.05479491382601459 0.017181193856216886" />
+            </geometry>
+        </collision>
+        <collision name="right_arm_link2-col-3">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link2-col-3.obj" scale="0.030625763412498664 0.10209709948228728 0.07643832760253999" />
+            </geometry>
+        </collision>
+        <collision name="right_arm_link2-col-4">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link2-col-4.obj" scale="0.0662765100775536 0.03174320251688534 0.09275598682940533" />
+            </geometry>
+        </collision>
+        <collision name="right_arm_link2-col-5">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link2-col-5.obj" scale="0.03202516955540305 0.015349386118489086 0.12161555516548345" />
+            </geometry>
+        </collision>
+        <collision name="right_arm_link2-col-6">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link2-col-6.obj" scale="0.03447101674693036 0.11527579996744294 0.08248645940193844" />
+            </geometry>
+        </collision>
+        <collision name="right_arm_link2-col-7">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link2-col-7.obj" scale="0.012617939519757392 0.02398546508562993 0.021866469935218236" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="right_arm_joint2" type="revolute">
+        <origin xyz="0.023988 -0.081265 0" rpy="0 0 0" />
+        <parent link="right_arm_link1" />
+        <child link="right_arm_link2" />
+        <axis xyz="1 0 0" />
+        <limit lower="-3.1416" upper="0.1745" effort="55" velocity="7.1209" />
+    </joint>
+    <link name="right_arm_link3">
+        <inertial>
+            <origin xyz="0.0053839 -0.00087109 -0.11261" rpy="0 0 0" />
+            <mass value="1.245" />
+            <inertia ixx="0.00072336" ixy="-3.3628E-06" ixz="-0.00012821" iyy="0.00073854" iyz="-8.3749E-06" izz="0.00037348" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/right_arm_link3.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="right_arm_link3-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link3-col-0.obj" scale="0.03682617729436413 0.07319262763935314 0.22796303752474922" />
+            </geometry>
+        </collision>
+        <collision name="right_arm_link3-col-1">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link3-col-1.obj" scale="0.04437766916613116 0.03583113145009931 0.08852280128876278" />
+            </geometry>
+        </collision>
+        <collision name="right_arm_link3-col-2">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link3-col-2.obj" scale="0.0786220741386233 0.07852232292207911 0.03809409092601851" />
+            </geometry>
+        </collision>
+        <collision name="right_arm_link3-col-3">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link3-col-3.obj" scale="0.07776912900707003 0.030159912714678522 0.22933966022452387" />
+            </geometry>
+        </collision>
+        <collision name="right_arm_link3-col-4">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link3-col-4.obj" scale="0.035522755899747266 0.032360088924657665 0.1918743949543172" />
+            </geometry>
+        </collision>
+        <collision name="right_arm_link3-col-5">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link3-col-5.obj" scale="0.03852403452724659 0.01838017641660039 0.1417710051146135" />
+            </geometry>
+        </collision>
+        <collision name="right_arm_link3-col-6">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link3-col-6.obj" scale="0.027594822283649845 0.045733437679012806 0.07511655545472329" />
+            </geometry>
+        </collision>
+        <collision name="right_arm_link3-col-7">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link3-col-7.obj" scale="0.026356794136728923 0.06902750873424277 0.14499378034729354" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="right_arm_joint3" type="revolute">
+        <origin xyz="-0.023988 0 -0.1155" rpy="0 0 0" />
+        <parent link="right_arm_link2" />
+        <child link="right_arm_link3" />
+        <axis xyz="0 0 1" />
+        <limit lower="-2.356196" upper="2.356196" effort="25" velocity="8.3776" />
+    </joint>
+    <link name="right_arm_link4">
+        <inertial>
+            <origin xyz="-0.00058877 -0.035687 -0.057422" rpy="0 0 0" />
+            <mass value="0.827" />
+            <inertia ixx="0.00016157" ixy="7.8184E-08" ixz="3.5925E-06" iyy="0.00022024" iyz="1.4211E-06" izz="0.00012683" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/right_arm_link4.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="right_arm_link4-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link4-col-0.obj" scale="0.08566896136410748 0.08975217267670145 0.15080362170163925" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="right_arm_joint4" type="revolute">
+        <origin xyz="0 0.035058 -0.1945" rpy="0 0 0" />
+        <parent link="right_arm_link3" />
+        <child link="right_arm_link4" />
+        <axis xyz="0 1 0" />
+        <limit lower="-1.7453" upper="0.3491" effort="25" velocity="8.3776" />
+    </joint>
+    <link name="right_arm_link5">
+        <inertial>
+            <origin xyz="-2.2815E-07 0.0031762 -0.07334" rpy="0 0 0" />
+            <mass value="0.63" />
+            <inertia ixx="0.00069134" ixy="1.4191E-08" ixz="3.837E-09" iyy="0.00065644" iyz="5.1952E-05" izz="0.00031157" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/right_arm_link5.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="right_arm_link5-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link5-col-0.obj" scale="0.06669559877156278 0.01750814320288366 0.17036207705360892" />
+            </geometry>
+        </collision>
+        <collision name="right_arm_link5-col-1">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link5-col-1.obj" scale="0.016100258259182862 0.011814001216539 0.10638544541135342" />
+            </geometry>
+        </collision>
+        <collision name="right_arm_link5-col-2">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link5-col-2.obj" scale="0.047398386821077554 0.052009381222184764 0.10239322562250691" />
+            </geometry>
+        </collision>
+        <collision name="right_arm_link5-col-3">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link5-col-3.obj" scale="0.01863265509435671 0.025021533061194735 0.13596456118760067" />
+            </geometry>
+        </collision>
+        <collision name="right_arm_link5-col-4">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link5-col-4.obj" scale="0.06669845717075297 0.01632638724577791 0.09493663176249921" />
+            </geometry>
+        </collision>
+        <collision name="right_arm_link5-col-5">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link5-col-5.obj" scale="0.018645365557437912 0.030079881945962547 0.10708496269050083" />
+            </geometry>
+        </collision>
+        <collision name="right_arm_link5-col-6">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link5-col-6.obj" scale="0.01859687434546063 0.0401944288176388 0.10681980263556515" />
+            </geometry>
+        </collision>
+        <collision name="right_arm_link5-col-7">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link5-col-7.obj" scale="0.04507486498862362 0.045099251223391014 0.025471251492892023" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="right_arm_joint5" type="revolute">
+        <origin xyz="0 -0.035058 -0.095" rpy="0 0 0" />
+        <parent link="right_arm_link4" />
+        <child link="right_arm_link5" />
+        <axis xyz="0 0 1" />
+        <limit lower="-2.356196" upper="2.356196" effort="18" velocity="10.4720" />
+    </joint>
+    <link name="right_arm_link6">
+        <inertial>
+            <origin xyz="0.0017914 -0.027486 0.00025485" rpy="0 0 0" />
+            <mass value="0.527" />
+            <inertia ixx="8.5442E-05" ixy="1.5357E-07" ixz="8.3693E-07" iyy="8.1185E-05" iyz="2.2221E-08" izz="8.2736E-05" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/right_arm_link6.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="right_arm_link6-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link6-col-0.obj" scale="0.05865337698727169 0.06421963169125086 0.059001738316149015" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="right_arm_joint6" type="revolute">
+        <origin xyz="0 0.028001 -0.16305" rpy="0 0 0" />
+        <parent link="right_arm_link5" />
+        <child link="right_arm_link6" />
+        <axis xyz="0 1 0" />
+        <limit lower="-1.047198" upper="1.047198" effort="18" velocity="10.4720" />
+    </joint>
+    <link name="right_arm_link7">
+        <inertial>
+            <origin xyz="-0.022945 2.2938E-07 -0.056523" rpy="0 0 0" />
+            <mass value="0.185" />
+            <inertia ixx="7.8535E-05" ixy="-9.5509E-10" ixz="-2.8712E-05" iyy="9.467E-05" iyz="9.104E-11" izz="6.1128E-05" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/right_arm_link7.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="right_arm_link7-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link7-col-0.obj" scale="0.05942270761118089 0.062131880858761965 0.04196479902588513" />
+            </geometry>
+        </collision>
+        <collision name="right_arm_link7-col-1">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link7-col-1.obj" scale="0.01365930354907649 0.033050594156651986 0.006535149272634211" />
+            </geometry>
+        </collision>
+        <collision name="right_arm_link7-col-2">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link7-col-2.obj" scale="0.010785672843695863 0.03996562646175517 0.02334746095679907" />
+            </geometry>
+        </collision>
+        <collision name="right_arm_link7-col-3">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link7-col-3.obj" scale="0.012599820334185434 0.03253786783397374 0.05841979577472236" />
+            </geometry>
+        </collision>
+        <collision name="right_arm_link7-col-4">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link7-col-4.obj" scale="0.012597621227843943 0.015143847655776253 0.05705350325565257" />
+            </geometry>
+        </collision>
+        <collision name="right_arm_link7-col-5">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link7-col-5.obj" scale="0.012363083016496587 0.02686898332210055 0.006474884246463918" />
+            </geometry>
+        </collision>
+        <collision name="right_arm_link7-col-6">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link7-col-6.obj" scale="0.022624634111428787 0.006767424711640907 0.00652569700651684" />
+            </geometry>
+        </collision>
+        <collision name="right_arm_link7-col-7">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_arm_link7-col-7.obj" scale="0.025560624430438314 0.012271862074904605 0.006531425118557921" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="right_arm_joint7" type="revolute">
+        <origin xyz="0.0295 -0.028001 0" rpy="0 0 0" />
+        <parent link="right_arm_link6" />
+        <child link="right_arm_link7" />
+        <axis xyz="1 0 0" />
+        <limit lower="-1.5708" upper="1.5708" effort="18" velocity="10.4720" />
+    </joint>
+    <link name="right_gripper_link">
+        <inertial>
+            <origin xyz="-2.2589E-07 -5.2175E-08 0.031107" rpy="0 0 0" />
+            <mass value="0.24625" />
+            <inertia ixx="0.00016511" ixy="9.5318E-07" ixz="5.0942E-10" iyy="9.8651E-05" iyz="-1.8604E-10" izz="0.00017588" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/right_gripper_link.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="right_gripper_link-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_gripper_link-col-0.obj" scale="0.06189159027204702 0.11028488911593758 0.017664904153569017" />
+            </geometry>
+        </collision>
+        <collision name="right_gripper_link-col-1">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_gripper_link-col-1.obj" scale="0.0619635714823792 0.06770965948093896 0.055721291869145796" />
+            </geometry>
+        </collision>
+        <collision name="right_gripper_link-col-2">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_gripper_link-col-2.obj" scale="0.019256502556769584 0.02026695760274211 0.006924145376728086" />
+            </geometry>
+        </collision>
+        <collision name="right_gripper_link-col-3">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_gripper_link-col-3.obj" scale="0.011782286223040027 0.04900446629076976 0.00693860052168635" />
+            </geometry>
+        </collision>
+        <collision name="right_gripper_link-col-4">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_gripper_link-col-4.obj" scale="0.028352107870377025 0.01932730471133854 0.006888593031512875" />
+            </geometry>
+        </collision>
+        <collision name="right_gripper_link-col-5">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_gripper_link-col-5.obj" scale="0.028744224923042284 0.020205760674902373 0.006889254784010923" />
+            </geometry>
+        </collision>
+        <collision name="right_gripper_link-col-6">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_gripper_link-col-6.obj" scale="0.019220850356336056 0.02062108566517412 0.006936713862967958" />
+            </geometry>
+        </collision>
+        <collision name="right_gripper_link-col-7">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_gripper_link-col-7.obj" scale="0.012225164309327297 0.02242255565203887 0.006889151485798273" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="right_gripper_joint" type="fixed">
+        <origin xyz="-0.0295 0 -0.16065" rpy="0 0 0" />
+        <parent link="right_arm_link7" />
+        <child link="right_gripper_link" />
+        <axis xyz="0 0 0" />
+    </joint>
+    <link name="right_realsense_link">
+        <inertial>
+            <origin xyz="0.0058264 -0.02222 -0.017353" rpy="0 0 0" />
+            <mass value="0.042603" />
+            <inertia ixx="2.3234E-05" ixy="-2.801E-06" ixz="-1.4377E-06" iyy="7.0119E-06" iyz="-1.2674E-06" izz="2.5513E-05" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/right_realsense_link.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.8 0.8 0.8 1" />
+            </material>
+        </visual>
+        <collision name="right_realsense_link-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_realsense_link-col-0.obj" scale="0.02512560938391543 0.028452990810750874 0.01537061155119609" />
+            </geometry>
+        </collision>
+        <collision name="right_realsense_link-col-1">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_realsense_link-col-1.obj" scale="0.019401409174333188 0.07211031712950583 0.018091275702436273" />
+            </geometry>
+        </collision>
+        <collision name="right_realsense_link-col-2">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_realsense_link-col-2.obj" scale="0.018661279788896687 0.02966174228662489 0.027317877651163346" />
+            </geometry>
+        </collision>
+        <collision name="right_realsense_link-col-3">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_realsense_link-col-3.obj" scale="0.025688589390241486 0.012157303366780033 0.01810870094715352" />
+            </geometry>
+        </collision>
+        <collision name="right_realsense_link-col-4">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_realsense_link-col-4.obj" scale="0.00899040227578559 0.06770454576052869 0.012969333049570883" />
+            </geometry>
+        </collision>
+        <collision name="right_realsense_link-col-5">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_realsense_link-col-5.obj" scale="0.027265246977014955 0.08149424186824193 0.008517622189243186" />
+            </geometry>
+        </collision>
+        <collision name="right_realsense_link-col-6">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_realsense_link-col-6.obj" scale="0.020552429215147522 0.031052150860299874 0.011164671834505271" />
+            </geometry>
+        </collision>
+        <collision name="right_realsense_link-col-7">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_realsense_link-col-7.obj" scale="0.026974864848025866 0.09180619667338434 0.015140884735072692" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="right_realsense_joint" type="fixed">
+        <origin xyz="0.05051 0.0028934 0.0051317" rpy="-3.1376 -0.43631 3.1399" />
+        <parent link="right_gripper_link" />
+        <child link="right_realsense_link" />
+        <axis xyz="0 0 0" />
+    </joint>
+    <link name="right_gripper_finger_link1">
+        <inertial>
+            <origin xyz="0.0056571 -0.015027 0.01959" rpy="0 0 0" />
+            <mass value="0.020196" />
+            <inertia ixx="6.4827E-06" ixy="7.3969E-08" ixz="-4.4977E-08" iyy="5.7129E-06" iyz="-3.9973E-07" izz="2.4057E-06" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/right_gripper_finger_link1.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="right_gripper_finger_link1-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_gripper_finger_link1-col-0.obj" scale="0.013712712410127316 0.010566625925166218 0.021600381862136864" />
+            </geometry>
+        </collision>
+        <collision name="right_gripper_finger_link1-col-1">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_gripper_finger_link1-col-1.obj" scale="0.013865547990063095 0.03534938314303743 0.013874763773223721" />
+            </geometry>
+        </collision>
+        <collision name="right_gripper_finger_link1-col-2">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_gripper_finger_link1-col-2.obj" scale="0.024864199579319735 0.011313633011349734 0.04767601190329705" />
+            </geometry>
+        </collision>
+        <collision name="right_gripper_finger_link1-col-3">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_gripper_finger_link1-col-3.obj" scale="0.015690753604838292 0.009477927305053986 0.022859905451321785" />
+            </geometry>
+        </collision>
+        <collision name="right_gripper_finger_link1-col-4">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_gripper_finger_link1-col-4.obj" scale="0.014974739822315859 0.005262828389680507 0.021866141938257755" />
+            </geometry>
+        </collision>
+        <collision name="right_gripper_finger_link1-col-5">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_gripper_finger_link1-col-5.obj" scale="0.018512171050194235 0.016303834876550072 0.005769206022705031" />
+            </geometry>
+        </collision>
+        <collision name="right_gripper_finger_link1-col-6">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_gripper_finger_link1-col-6.obj" scale="0.02980294283177876 0.019805487580308312 0.023229759857717684" />
+            </geometry>
+        </collision>
+        <collision name="right_gripper_finger_link1-col-7">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_gripper_finger_link1-col-7.obj" scale="0.024884061435132894 0.005813722100704598 0.05121456072853584" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="right_gripper_finger_joint1" type="prismatic">
+        <origin xyz="-8.8709E-05 0.013453 -0.03689" rpy="0 0 0" />
+        <parent link="right_gripper_link" />
+        <child link="right_gripper_finger_link1" />
+        <axis xyz="-0.0077873 0.99997 0" />
+        <limit lower="0" upper="0.05" effort="100" velocity="0.25" />
+    </joint>
+    <link name="right_gripper_finger_link2">
+        <inertial>
+            <origin xyz="-0.0056573 0.015027 0.01959" rpy="0 0 0" />
+            <mass value="0.020196" />
+            <inertia ixx="6.4827E-06" ixy="7.3965E-08" ixz="4.5014E-08" iyy="5.7129E-06" iyz="3.9974E-07" izz="2.4057E-06" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/right_gripper_finger_link2.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82353 0.82353 1 1" />
+            </material>
+        </visual>
+        <collision name="right_gripper_finger_link2-col-0">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_gripper_finger_link2-col-0.obj" scale="0.01709278082707907 0.02459968563414147 0.021906511267761067" />
+            </geometry>
+        </collision>
+        <collision name="right_gripper_finger_link2-col-1">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_gripper_finger_link2-col-1.obj" scale="0.013853023563711042 0.03514223367103614 0.013798770683080245" />
+            </geometry>
+        </collision>
+        <collision name="right_gripper_finger_link2-col-2">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_gripper_finger_link2-col-2.obj" scale="0.01555545979475437 0.011742165570051777 0.012619786077667701" />
+            </geometry>
+        </collision>
+        <collision name="right_gripper_finger_link2-col-3">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_gripper_finger_link2-col-3.obj" scale="0.027646633994106714 0.012805408554764983 0.05790177648950889" />
+            </geometry>
+        </collision>
+        <collision name="right_gripper_finger_link2-col-4">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_gripper_finger_link2-col-4.obj" scale="0.02983779675833246 0.008065750133942947 0.0701740708943901" />
+            </geometry>
+        </collision>
+        <collision name="right_gripper_finger_link2-col-5">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_gripper_finger_link2-col-5.obj" scale="0.03722534328868245 0.00944380805177314 0.0038920597621389806" />
+            </geometry>
+        </collision>
+        <collision name="right_gripper_finger_link2-col-6">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_gripper_finger_link2-col-6.obj" scale="0.0168766603647863 0.016536673471101167 0.005122030883627504" />
+            </geometry>
+        </collision>
+        <collision name="right_gripper_finger_link2-col-7">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="meshes/collision/right_gripper_finger_link2-col-7.obj" scale="0.0149836084025984 0.011793685687891433 0.012619786003785547" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="right_gripper_finger_joint2" type="prismatic">
+        <origin xyz="8.9046E-05 -0.013453 -0.03689" rpy="0 0 0" />
+        <parent link="right_gripper_link" />
+        <child link="right_gripper_finger_link2" />
+        <axis xyz="0.0077873 -0.99997 0" />
+        <limit lower="0" upper="0.05" effort="100" velocity="0.25" />
+    </joint>
+</robot>

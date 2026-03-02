@@ -1,0 +1,4 @@
+[submodule "third_party/dinov3"]
+	path = third_party/dinov3
+	url = https://github.com/facebookresearch/dinov3
+	ignore = untracked

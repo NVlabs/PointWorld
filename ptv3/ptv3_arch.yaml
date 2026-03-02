@@ -1,0 +1,34 @@
+sizes:
+  small:
+    channels_max: 128
+    enc_depths: [2, 2, 2, 6, 2]
+    enc_channels: ["channels", "channels", 128, 256, 512]
+    enc_num_head: [2, 4, 8, 16, 32]
+    dec_depths: [2, 2, 2, 2]
+    dec_channels: ["channels", "channels", 128, 256]
+    dec_num_head: [4, 4, 8, 16]
+    stride: auto
+    enc_patch_size: auto
+    dec_patch_size: auto
+  base:
+    channels_max: 256
+    enc_depths: [4, 4, 4, 8, 8, 12, 4]
+    enc_channels: ["channels", "channels", "channels", 384, 384, 512, 768]
+    enc_num_head: [4, 4, 4, 8, 8, 16, 24]
+    dec_depths: [2, 2, 2, 2, 2, 2]
+    dec_channels: ["channels", "channels", 256, 384, 384, 512]
+    dec_num_head: [4, 4, 4, 8, 8, 16]
+    stride: auto
+    enc_patch_size: auto
+    dec_patch_size: auto
+  large:
+    channels_eq: 256
+    enc_depths: [4, 4, 8, 8, 12, 12, 4]
+    enc_channels: [256, 384, 384, 512, 512, 768, 1024]
+    enc_num_head: [8, 12, 12, 16, 16, 24, 32]
+    dec_depths: [4, 4, 4, 4, 4, 4]
+    dec_channels: [256, 384, 384, 512, 512, 768]
+    dec_num_head: [8, 12, 12, 16, 16, 24]
+    stride: auto
+    enc_patch_size: auto
+    dec_patch_size: auto
