@@ -9,5 +9,4 @@ dependencies:
   - pip
   - pip:
       - -r requirements.txt
-# Install timm separately with:
-#   python -m pip install timm==1.0.19 --no-deps
+# Install timm and flash-attn separately after the base env exists.

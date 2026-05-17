@@ -58,6 +58,7 @@ If you find this work useful in your research, please cite using the following B
 
 - [Important Notes](#important-notes)
 - [Setup](#setup)
+- [Datasets And Checkpoints](#datasets-and-checkpoints)
 - [Training](#training)
 - [Evaluation](#evaluation)
 - [Visualization](#visualization)
@@ -68,7 +69,10 @@ If you find this work useful in your research, please cite using the following B
 <a id="important-notes"></a>
 ## 📌 Important Notes
 
-- Precomputed datasets and pretrained checkpoints are still under internal review at NVIDIA and are expected to be released in the next 1-2 months.
+- Released datasets and pretrained checkpoints are hosted on Hugging Face:
+  - DROID generated H5 package: https://huggingface.co/datasets/nvidia/PointWorld-DROID
+  - BEHAVIOR generated H5 package: https://huggingface.co/datasets/nvidia/PointWorld-BEHAVIOR
+  - pretrained PointWorld checkpoints: https://huggingface.co/nvidia/PointWorld_models
 - `main` is the training/evaluation code branch for release.
 - `data` is the dataset preparation pipeline branch.
 - Please first prepare the data using the `data` branch. Then return to `main` for training and evaluation.
@@ -90,8 +94,12 @@ Recommended setup:
 # from repo root
 conda env create -n pointworld-env -f environments/train_eval.yml
 conda activate pointworld-env
+# used by the dataset/checkpoint download commands below
+python -m pip install huggingface_hub==0.26.2
 # timm is used for PTv3 DropPath; install without pulling extra transitive deps
 python -m pip install timm==1.0.19 --no-deps
+# flash-attn imports torch at build time, so install it after the base env exists
+python -m pip install flash-attn==2.7.4.post1 --no-build-isolation
 # keep urdfpy-compatible graph deps on a Python 3.10-safe networkx release
 python -m pip install networkx==3.4.2 --no-deps
 ```
@@ -100,8 +108,12 @@ If you also need visualization extras:
 
 ```bash
 conda env update -n pointworld-env -f environments/train_eval_viz.yml --prune
+# used by the dataset/checkpoint download commands below
+python -m pip install huggingface_hub==0.26.2
 # timm is used for PTv3 DropPath; install without pulling extra transitive deps
 python -m pip install timm==1.0.19 --no-deps
+# flash-attn imports torch at build time, so install it after the base env exists
+python -m pip install flash-attn==2.7.4.post1 --no-build-isolation
 # keep urdfpy-compatible graph deps on a Python 3.10-safe networkx release
 python -m pip install networkx==3.4.2 --no-deps
 ```
@@ -130,6 +142,94 @@ Use this directory layout for generated datasets consumed by `main`:
 The `arguments.py` defaults now follow this convention under `LOCAL_DATASET_DIR`:
 - `droid` -> `${LOCAL_DATASET_DIR}/droid/wds`
 - `behavior` -> `${LOCAL_DATASET_DIR}/behavior/wds`
+
+<a id="datasets-and-checkpoints"></a>
+## 📦 Datasets And Checkpoints
+
+This branch consumes local WebDataset (WDS) shards and model checkpoints. It does
+not consume the packaged Hugging Face archives directly.
+
+### Released Dataset Packages
+
+The generated H5/JSON datasets are distributed as packaged archives:
+
+- DROID: https://huggingface.co/datasets/nvidia/PointWorld-DROID
+- BEHAVIOR: https://huggingface.co/datasets/nvidia/PointWorld-BEHAVIOR
+
+Each dataset repo includes `recover_dataset_from_parts.sh`. After downloading a
+dataset package from Hugging Face, restore it with that script, then use the
+`data` branch to run `data_integrity_check.py` and `convert_wds.py`.
+DROID full-dataset restoration is multi-terabyte scale, but the DROID flow
+package is split into independent shards. You can restore a small subset of
+DROID flow shards or BEHAVIOR task packages for development and smoke tests,
+then generate a local WDS manifest from that subset. Use the full package when
+you need full-dataset evaluation. For DROID filtered metrics on a subset, make
+sure the subset test clips are covered by the released confidence file described
+below; arbitrary DROID flow shards are still useful for restore, conversion, and
+unfiltered evaluation smoke tests.
+
+Expected restored roots:
+
+```text
+/path/to/pointworld_droid_restored/droid
+/path/to/pointworld_behavior_restored/behavior
+```
+
+Expected WDS roots consumed by this branch:
+
+```text
+/path/to/droid/wds
+/path/to/behavior/wds
+```
+
+For DROID filtered metrics, the released DROID package includes an
+expert-confidence artifact:
+
+```text
+droid/confidence/expert_confidence-seed=42.h5
+```
+
+After converting DROID H5 to WDS, copy that file into the generated WDS test
+split as:
+
+```text
+/path/to/droid/wds/test/expert_confidence-seed=42.h5
+```
+
+Use the `data` branch README for the full restore, integrity-check, and H5-to-WDS
+conversion commands, including subset restore examples.
+
+### Released Pretrained Checkpoints
+
+Pretrained checkpoints are hosted at:
+
+```text
+https://huggingface.co/nvidia/PointWorld_models
+```
+
+Download them into `pretrained_checkpoints/` while preserving the repo directory
+layout.
+
+Example:
+
+```bash
+huggingface-cli download nvidia/PointWorld_models \
+  --local-dir pretrained_checkpoints \
+  --include "small-droid/model-best.pt" \
+  --include "large-droid/model-best.pt" \
+  --include "large-droid+behavior/model-best.pt" \
+  --include "filter_droid_test_split/model-last.pt"
+```
+
+The released scene-flow checkpoints are:
+
+- `small-droid/model-best.pt`: DROID-only.
+- `large-droid/model-best.pt`: DROID-only.
+- `large-droid+behavior/model-best.pt`: DROID + BEHAVIOR.
+
+The `filter_droid_test_split/model-last.pt` checkpoint is included for the
+DROID confidence/filtering workflow; it is not one of the scene-flow checkpoints
+used in the evaluation examples below.
 
 <a id="training"></a>
 ## 🏋️ Training
@@ -200,56 +300,49 @@ torchrun \
 
 By default, release evaluation targets the `test` split.
 
-### Expert Model Training For DROID Filtered Metrics (Optional)
+Small WDS subsets are useful for validating that download, recovery,
+conversion, checkpoint loading, and evaluation all work end-to-end. Treat
+subset metrics as smoke-test outputs, not benchmark numbers.
 
-This step is only required if you want reliable filtered metrics on the DROID domain (`full_eval/test/filtered_l2_moved/mean`) and for reproducing the results in the paper.
+### DROID Expert Confidence For Filtered Metrics
 
-```bash
-python train.py \
-  --domains=droid \
-  --data_dirs=/path/to/droid/wds \
-  --norm_stats_path=stats/droid \
-  --train_splits=test \
-  --exp_name=droid-test-expert \
-  --batch_size=<BATCH_SIZE> \
-  --num_workers=<NUM_WORKERS> \
-  --eval_num_workers=<EVAL_NUM_WORKERS> \
-  --eval_freq=-1
+For DROID filtered metrics, use the released expert-confidence artifact from the
+DROID dataset package:
+
+```text
+droid/confidence/expert_confidence-seed=42.h5
 ```
+
+After converting DROID H5 to WDS in the `data` branch, copy it to:
+
+```text
+/path/to/droid/wds/test/expert_confidence-seed=42.h5
+```
+
+Regenerating confidence annotations from scratch is optional. Use the released
+artifact when reproducing the results in the paper. The released confidence file
+covers the DROID evaluation split, not every arbitrary flow shard. If you are
+testing on a DROID subset, build the subset's WDS manifest from clips present in
+that confidence file before running filtered metrics, or use the subset for
+unfiltered pipeline smoke testing.
 
 ### 1. DROID Evaluation (Annotation-Aware)
 
-The key paper metric is:
+The main DROID metric we focus on is:
 
 - `full_eval/test/filtered_l2_moved/mean`
 
-To evaluate filtered metrics, generate expert confidence locally first.
+This metric uses the expert-confidence artifact to focus evaluation on reliable
+moving-point regions and reduce noise from ambiguous/static parts of the scene.
 
-1. Set the expert checkpoint path (for example, from the `--train_splits=test` run above):
-
-```bash
-EXPERT_MODEL_PATH=/path/to/train_logs/droid-test-expert/model-last.pt
-```
-
-2. Generate confidence annotations on DROID test split:
+To evaluate a released DROID checkpoint, set `MODEL_PATH` to any released
+DROID-capable scene-flow checkpoint:
 
 ```bash
-python eval.py \
-  --model_path "${EXPERT_MODEL_PATH}" \
-  --domains=droid \
-  --data_dirs=/path/to/droid/wds \
-  --run_confidence_annotation=true \
-  --confidence_thres=0.8 \
-  --batch_size=1 \
-  --eval_num_batches=-1
-```
-
-This writes `expert_confidence-seed=42.h5` under `/path/to/droid/wds/test/`.
-
-3. Evaluate a target checkpoint using the generated confidence annotation:
-
-```bash
-MODEL_PATH=/path/to/train_logs/<run_name>/model-last.pt
+MODEL_PATH=pretrained_checkpoints/large-droid/model-best.pt
+# or:
+# MODEL_PATH=pretrained_checkpoints/small-droid/model-best.pt
+# MODEL_PATH=pretrained_checkpoints/large-droid+behavior/model-best.pt
 ```
 
 ```bash
@@ -267,9 +360,10 @@ For quicker iteration, you can set `--eval_num_batches=<N>` (for example `100`) 
 ### 2. BEHAVIOR Evaluation (Simulation-Only)
 
 BEHAVIOR evaluation does not require the expert-confidence annotation because the data is noiseless.
+Use the DROID+BEHAVIOR checkpoint for BEHAVIOR evaluation:
 
 ```bash
-MODEL_PATH=/path/to/train_logs/<run_name>/model-last.pt
+MODEL_PATH=pretrained_checkpoints/large-droid+behavior/model-best.pt
 ```
 
 ```bash
@@ -339,7 +433,7 @@ Third-party OSS attribution and license references for distributed or adapted co
 | [facebookresearch/dinov3](https://github.com/facebookresearch/dinov3) | Scene encoder backbone submodule (`third_party/dinov3/`) | [DINOv3 License](third_party/dinov3/LICENSE.md) |
 | [Pointcept/PointTransformerV3](https://github.com/Pointcept/PointTransformerV3) | Vendored/adapted PTv3 components (`ptv3/`) | [MIT](ptv3/LICENSE) |
 | [facebookresearch/sonata](https://github.com/facebookresearch/sonata) | PTv3 lineage reference for adapted components | [Apache-2.0](https://github.com/facebookresearch/sonata/blob/main/LICENSE) |
-| [StanfordVL/OmniGibson](https://github.com/StanfordVL/OmniGibson) | Adapted transform utilities (`transform_utils.py`, `deploy/transform_utils_torch.py`) | [MIT](https://github.com/StanfordVL/OmniGibson/blob/main/LICENSE) |
+| [StanfordVL/OmniGibson](https://github.com/StanfordVL/OmniGibson) | Adapted transform utilities (`transform_utils.py`) | [MIT](https://github.com/StanfordVL/OmniGibson/blob/main/LICENSE) |
 | [UT-Austin-RPL/deoxys_control](https://github.com/UT-Austin-RPL/deoxys_control) | Additional adapted transform routines noted in `transform_utils.py` | [Apache-2.0](https://github.com/UT-Austin-RPL/deoxys_control/blob/main/LICENSE) |
 
 <a id="contributing"></a>

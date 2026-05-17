@@ -38,6 +38,15 @@ MODEL_CONTRACT_KEYS = (
     "eval_max_num_cameras",
 )
 
+# Published schema-v1 checkpoints were prepared before these camera-count
+# fields were added to the saved model contract. They used these parser defaults.
+LEGACY_MODEL_CONTRACT_DEFAULTS = {
+    "train_min_num_cameras": 1,
+    "train_max_num_cameras": 3,
+    "eval_min_num_cameras": 2,
+    "eval_max_num_cameras": 2,
+}
+
 DATA_CONTRACT_KEYS = (
     "domains",
 )
@@ -104,16 +113,21 @@ def _extract_model_value(args_map: Mapping[str, Any], key: str, context: str) ->
 
 
 def _validate_model_contract(model_contract: Mapping[str, Any], context: str) -> dict[str, Any]:
-    missing = [k for k in MODEL_CONTRACT_KEYS if k not in model_contract]
+    normalized_contract = dict(model_contract)
+    missing = [k for k in MODEL_CONTRACT_KEYS if k not in normalized_contract]
     if missing:
-        raise RuntimeError(f"{context} model_contract missing keys: {missing}.")
+        unsupported_missing = [k for k in missing if k not in LEGACY_MODEL_CONTRACT_DEFAULTS]
+        if unsupported_missing:
+            raise RuntimeError(f"{context} model_contract missing keys: {missing}.")
+        for key in missing:
+            normalized_contract[key] = LEGACY_MODEL_CONTRACT_DEFAULTS[key]
     validated: dict[str, Any] = {}
     for key in MODEL_CONTRACT_KEYS:
         try:
-            validated[key] = _MODEL_CASTERS[key](model_contract[key])
+            validated[key] = _MODEL_CASTERS[key](normalized_contract[key])
         except Exception as exc:
             raise RuntimeError(
-                f"{context} model_contract field '{key}' has invalid value {model_contract[key]!r}."
+                f"{context} model_contract field '{key}' has invalid value {normalized_contract[key]!r}."
             ) from exc
     return validated
 

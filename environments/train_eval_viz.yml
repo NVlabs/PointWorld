@@ -12,5 +12,4 @@ dependencies:
       - matplotlib==3.10.6
       - open3d==0.16.0
       - viser==1.0.10
-# Install timm separately with:
-#   python -m pip install timm==1.0.19 --no-deps
+# Install timm and flash-attn separately after the base env exists.

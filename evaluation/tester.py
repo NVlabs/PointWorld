@@ -40,12 +40,6 @@ from evaluation.metrics import _WeightedStat, _metric_base_name, _should_emit_de
 from evaluation.meta import _EvaluationMetaAccumulator
 from evaluation.annotation import ConfidenceHelper
 
-from visualization.prediction_viz import (
-    PredictionVisualizer,
-    PredictionVisualizerConfig,
-    build_sample_from_dictionary,
-)
-
 class Tester(Trainer):
     def __init__(self, args):
         # Match dev eval numeric settings (train.py sets this in the dev repo).
@@ -346,6 +340,12 @@ class Tester(Trainer):
         N = int(self._eval_viz_num)
         if N <= 0:
             return
+        from visualization.prediction_viz import (
+            PredictionVisualizer,
+            PredictionVisualizerConfig,
+            build_sample_from_dictionary,
+        )
+
         dl, _ = self._build_eval_loader(split, enable_mask=False)
 
         viz_config = PredictionVisualizerConfig.from_args(self.args)

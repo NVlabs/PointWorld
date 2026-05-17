@@ -85,6 +85,14 @@ class ConfidenceHelper:
                 grp = grp[part]
         return grp
 
+    def _confidence_key_candidates(self, key):
+        key = str(key)
+        candidates = [key]
+        uuid, sep, clip = key.rpartition("-")
+        if sep and uuid.endswith("_flows"):
+            candidates.append(f"{uuid[:-len('_flows')]}-{clip}")
+        return candidates
+
     def _voxelize_world_points(self, points_world):
         if points_world.size == 0:
             return np.empty((0, 3), dtype=np.int64)
@@ -115,7 +123,11 @@ class ConfidenceHelper:
         dataset_name = "low_confidence_voxels"
         voxel_view_dtype = np.dtype((np.void, 3 * np.dtype(np.int64).itemsize))
 
-        grp = self._resolve_conf_group(file_handle, key, create=False)
+        grp = None
+        for candidate in self._confidence_key_candidates(key):
+            grp = self._resolve_conf_group(file_handle, candidate, create=False)
+            if grp is not None and dataset_name in grp:
+                break
         if grp is None or dataset_name not in grp:
             raise RuntimeError(
                 f"Missing confidence voxels for key={key} (domain={domain})."
