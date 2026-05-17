@@ -58,6 +58,7 @@ If you find this work useful in your research, please cite using the following B
 
 - [Important Notes](#important-notes)
 - [Quick Walkthrough](#quick-walkthrough)
+- [Download Released Generated H5 Datasets](#download-released-generated-h5-datasets)
 - [Setup](#setup)
 - [Download Third-Party Checkpoints](#third-party-checkpoints)
 - [Full Data Generation Pipelines](#full-data-generation-pipelines)
@@ -70,7 +71,10 @@ If you find this work useful in your research, please cite using the following B
 <a id="important-notes"></a>
 ## 📌 Important Notes
 
-- Precomputed datasets and pretrained checkpoints are still under internal review at NVIDIA and are expected to be released in the next 1-2 months.
+- Released generated H5 datasets are hosted on Hugging Face:
+  - DROID: https://huggingface.co/datasets/nvidia/PointWorld-DROID
+  - BEHAVIOR: https://huggingface.co/datasets/nvidia/PointWorld-BEHAVIOR
+- Released PointWorld model checkpoints are hosted at https://huggingface.co/nvidia/PointWorld_models.
 - `data` is the dataset preparation pipeline (this branch), and `main` is training/evaluation code.
 - Please first prepare the data using the `data` branch. Then return to `main` for training and evaluation.
 
@@ -78,10 +82,9 @@ If you find this work useful in your research, please cite using the following B
 ## 🧭 Quick Walkthrough
 
 1. Set up the environment in [Setup](#setup).
-2. Download checkpoints for the required third-party annotation models in [Third-Party Checkpoints](#third-party-checkpoints).
-3. Run generation pipelines in [Full Data Generation Pipelines](#full-data-generation-pipelines).
-4. Run integrity, create split manifest, and convert to WDS in [Build Train/Eval Datasets from Generated H5](#build-train-eval-datasets-from-generated-h5).
-5. Train/evaluate in the `main` branch with generated train/eval datasets.
+2. Either download the released generated H5 packages in [Download Released Generated H5 Datasets](#download-released-generated-h5-datasets), or download third-party annotation checkpoints and run the full generation pipelines.
+3. Run integrity, create split manifest, and convert to WDS in [Build Train/Eval Datasets from Generated H5](#build-train-eval-datasets-from-generated-h5).
+4. Train/evaluate in the `main` branch with generated train/eval datasets.
 
 ```text
 [DROID raw scenes + BEHAVIOR raw episodes]
@@ -107,6 +110,131 @@ If you find this work useful in your research, please cite using the following B
                   v
 [`main` branch training / evaluation input]
 ```
+
+<a id="download-released-generated-h5-datasets"></a>
+## 📦 Download Released Generated H5 Datasets
+
+The Hugging Face dataset repos host packaged generated H5/JSON artifacts, not
+raw source datasets and not prebuilt WDS shards. After download, restore the
+package parts with the included `recover_dataset_from_parts.sh`, then run the
+integrity check and WDS conversion commands in this branch.
+
+The restore helper uses the system `zstd` and `tar` commands. Install `zstd`
+before running the recovery step, for example with your system package manager
+or with `conda install -c conda-forge zstd`.
+
+### DROID
+
+The full DROID flow package is multi-terabyte scale after download and restore,
+but the released `droid/flows-fs-optimized` package is split into independent
+shards. Download all shard groups for a full local dataset, or download a small
+set of shard prefixes for subset WDS conversion and smoke testing. The smaller
+`droid/cameras`, `droid/confidence`, and `droid/depth_320x180` groups can be
+restored independently as needed.
+
+```bash
+huggingface-cli download nvidia/PointWorld-DROID \
+  --repo-type dataset \
+  --local-dir /path/to/PointWorld-DROID
+
+bash /path/to/PointWorld-DROID/recover_dataset_from_parts.sh \
+  --packages /path/to/PointWorld-DROID \
+  --out /path/to/pointworld_droid_restored \
+  --threads 0
+```
+
+Subset example using one DROID flow shard and the confidence artifact:
+
+```bash
+huggingface-cli download nvidia/PointWorld-DROID \
+  --repo-type dataset \
+  --include "recover_dataset_from_parts.sh" \
+  --include "droid/flows-fs-optimized/_shards_manifest.json" \
+  --include "droid/flows-fs-optimized/shard-000000/*" \
+  --include "droid/confidence/*" \
+  --local-dir /path/to/PointWorld-DROID-subset
+
+bash /path/to/PointWorld-DROID-subset/recover_dataset_from_parts.sh \
+  --packages /path/to/PointWorld-DROID-subset \
+  --out /path/to/pointworld_droid_subset_restored \
+  --include-prefix droid/flows-fs-optimized/shard-000000 \
+  --include-prefix droid/confidence \
+  --threads 0
+```
+
+This kind of subset is useful for recovery, conversion, and pipeline smoke
+tests. For DROID confidence-filtered evaluation, the WDS test clips must also be
+present in `droid/confidence/expert_confidence-seed=42.h5`; arbitrary flow
+shards may not overlap that released confidence split.
+
+After restoration, the canonical DROID root is:
+
+```text
+/path/to/pointworld_droid_restored/droid
+```
+
+Expected contents include:
+
+```text
+droid/flows-fs-optimized/
+droid/cameras/
+droid/confidence/expert_confidence-seed=42.h5
+droid/depth_320x180/
+```
+
+The `confidence/expert_confidence-seed=42.h5` file is the released artifact for
+DROID confidence-filtered evaluation. After converting DROID H5 to WDS, copy it
+into the WDS test split:
+
+```bash
+cp /path/to/pointworld_droid_restored/droid/confidence/expert_confidence-seed=42.h5 \
+  /path/to/droid/wds/test/expert_confidence-seed=42.h5
+```
+
+### BEHAVIOR
+
+```bash
+huggingface-cli download nvidia/PointWorld-BEHAVIOR \
+  --repo-type dataset \
+  --local-dir /path/to/PointWorld-BEHAVIOR
+
+bash /path/to/PointWorld-BEHAVIOR/recover_dataset_from_parts.sh \
+  --packages /path/to/PointWorld-BEHAVIOR \
+  --out /path/to/pointworld_behavior_restored \
+  --threads 0
+```
+
+Subset example using one BEHAVIOR task package:
+
+```bash
+huggingface-cli download nvidia/PointWorld-BEHAVIOR \
+  --repo-type dataset \
+  --include "recover_dataset_from_parts.sh" \
+  --include "behavior/flows/task-0000/*" \
+  --local-dir /path/to/PointWorld-BEHAVIOR-subset
+
+bash /path/to/PointWorld-BEHAVIOR-subset/recover_dataset_from_parts.sh \
+  --packages /path/to/PointWorld-BEHAVIOR-subset \
+  --out /path/to/pointworld_behavior_subset_restored \
+  --include-prefix behavior/flows/task-0000 \
+  --threads 0
+```
+
+After restoration, the canonical BEHAVIOR root is:
+
+```text
+/path/to/pointworld_behavior_restored/behavior
+```
+
+Expected contents:
+
+```text
+behavior/flows/task-*/episode_*.hdf5
+```
+
+### Next Step
+
+Use the restored H5 roots with [Build Train/Eval Datasets from Generated H5](#build-train-eval-datasets-from-generated-h5). Only run the full generation pipelines below if you want to reproduce annotation generation from raw sources.
 
 <a id="setup"></a>
 ## 🛠️ Setup
@@ -343,32 +471,46 @@ On the first run, OmniGibson/Isaac extension sync, shader compilation, and scene
 
 ```bash
 python data_integrity_check.py \
-  --input_dir /path/to/droid/flows-fs-optimize \
+  --input_dir /path/to/droid/flows-fs-optimized \
   --domain droid
 
 python make_wds_manifest.py \
-  --input_dir /path/to/droid/flows-fs-optimize \
+  --input_dir /path/to/droid/flows-fs-optimized \
   --domain droid \
-  --output_manifest /path/to/droid/flows-fs-optimize/wds_manifest_seed42_test0.1.json
+  --output_manifest /path/to/droid/flows-fs-optimized/wds_manifest_seed42_test0.1.json
 
 python convert_wds.py \
-  --input_dir /path/to/droid/flows-fs-optimize \
+  --input_dir /path/to/droid/flows-fs-optimized \
   --output_dir /path/to/droid/wds \
   --domain droid \
-  --manifest /path/to/droid/flows-fs-optimize/wds_manifest_seed42_test0.1.json
+  --manifest /path/to/droid/flows-fs-optimized/wds_manifest_seed42_test0.1.json
 ```
 
-To match the test split from the paper, pass the release manifest directly instead of generating one:
+To use the same evaluation split as the released results after restoring the
+full dataset, pass the release manifest directly instead of generating one:
 
 ```bash
 python convert_wds.py \
-  --input_dir /path/to/droid/flows-fs-optimize \
+  --input_dir /path/to/droid/flows-fs-optimized \
   --output_dir /path/to/droid/wds \
   --domain droid \
   --manifest manifests/droid_paper_split_manifest.json
 ```
 
-Manifest matching is strict and fail-fast: if local integrity clips do not match the manifest universe, regenerate a local manifest from your local `integrity_check.json`.
+Manifest matching is strict and fail-fast. If you restored only a subset of
+DROID shards, generate a local manifest from that subset's `integrity_check.json`
+as shown above; the full release manifest intentionally requires the complete
+release clip universe.
+
+For DROID confidence-filtered evaluation, copy the released confidence file after
+WDS conversion. On a subset, first make sure the local test manifest contains
+clips that are present in that confidence file; otherwise use the subset for
+unfiltered evaluation smoke testing or generate a matching confidence artifact.
+
+```bash
+cp /path/to/pointworld_droid_restored/droid/confidence/expert_confidence-seed=42.h5 \
+  /path/to/droid/wds/test/expert_confidence-seed=42.h5
+```
 
 ### BEHAVIOR
 
@@ -389,7 +531,8 @@ python convert_wds.py \
   --manifest /path/to/behavior/flows/wds_manifest_seed42_test0.1.json
 ```
 
-To match the test split from the paper, pass the release manifest directly instead of generating one:
+To use the same evaluation split as the released results after restoring the
+full dataset, pass the release manifest directly instead of generating one:
 
 ```bash
 python convert_wds.py \
@@ -418,7 +561,7 @@ Use `visualization/visualize_generated_h5.py` to open a [viser](https://github.c
 
 ```bash
 python visualization/visualize_generated_h5.py \
-  --h5_dir /path/to/droid/flows-fs-optimize
+  --h5_dir /path/to/droid/flows-fs-optimized
 ```
 
 ### Random clip from BEHAVIOR generated H5
