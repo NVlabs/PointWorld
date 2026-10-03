@@ -15,15 +15,17 @@ from copy import deepcopy
 from addict import Dict
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.nn.init import trunc_normal_
-import spconv.pytorch as spconv
-import torch_scatter
 from timm.layers import DropPath
-from flash_attn.flash_attn_interface import flash_attn_varlen_qkvpacked_func
+from .backend import get_backend
 
 
 def prepare_flash_attn_dtype(tensor: torch.Tensor) -> torch.Tensor:
-    if tensor.device.type == "cuda" and torch.cuda.is_bf16_supported():
+    dt = tensor.device.type
+    if dt == "cuda" and torch.cuda.is_bf16_supported():
+        target_dtype = torch.bfloat16
+    elif dt == "xpu" and torch.xpu.is_available() and torch.xpu.is_bf16_supported():
         target_dtype = torch.bfloat16
     else:
         target_dtype = torch.float16
@@ -186,14 +188,57 @@ class SerializedAttention(PointModule):
         # padding and reshape feat and batch for serialized point patch
         qkv = self.qkv(point.feat)[order]
 
+        backend = get_backend()
         qkv_prepared = prepare_flash_attn_dtype(qkv)
-        feat = flash_attn_varlen_qkvpacked_func(
-            qkv_prepared.reshape(-1, 3, H, C // H),
-            cu_seqlens,
-            max_seqlen=self.patch_size,
-            dropout_p=self.attn_drop if self.training else 0,
-            softmax_scale=self.scale,
-        ).reshape(-1, C)
+        if backend.device_type == "cuda":
+            feat = backend.flash_attn_varlen_qkvpacked_func(
+                qkv_prepared.reshape(-1, 3, H, C // H),
+                cu_seqlens,
+                max_seqlen=self.patch_size,
+                dropout_p=self.attn_drop if self.training else 0,
+                softmax_scale=self.scale,
+            ).reshape(-1, C)
+        else:
+            seq_starts = cu_seqlens[:-1].to(torch.int64)
+            seq_ends = cu_seqlens[1:].to(torch.int64)
+            seq_lens = seq_ends - seq_starts
+            n_seq = seq_starts.numel()
+            T = qkv_prepared.shape[0]
+
+            def _attn_chunk(seg: torch.Tensor) -> torch.Tensor:
+                L = seg.shape[0]
+                q = seg[:, :C].view(L, H, C // H).permute(1, 0, 2)
+                k = seg[:, C:2 * C].view(L, H, C // H).permute(1, 0, 2)
+                v = seg[:, 2 * C:].view(L, H, C // H).permute(1, 0, 2)
+                out = F.scaled_dot_product_attention(
+                    q,
+                    k,
+                    v,
+                    scale=self.scale,
+                    dropout_p=self.attn_drop if self.training else 0.0,
+                )
+                return out.permute(1, 0, 2).reshape(L, C).to(qkv.dtype)
+
+            if bool((seq_lens == K).all()):
+                qkv_t = qkv_prepared.view(n_seq, K, 3, H, C // H).permute(2, 0, 3, 1, 4)
+                q, k, v = qkv_t[0], qkv_t[1], qkv_t[2]
+                feat = F.scaled_dot_product_attention(
+                    q,
+                    k,
+                    v,
+                    scale=self.scale,
+                    dropout_p=self.attn_drop if self.training else 0.0,
+                )
+                feat = feat.permute(0, 2, 1, 3).reshape(T, C)
+            else:
+                outs = []
+                for s in range(n_seq):
+                    seg = qkv_prepared[seq_starts[s]:seq_ends[s]]
+                    L = int(seq_lens[s])
+                    if seg.shape[0] != L:
+                        seg = seg[:L]
+                    outs.append(_attn_chunk(seg))
+                feat = torch.cat(outs, dim=0)
         feat = feat.to(qkv.dtype)
         feat = feat[inverse]
 
@@ -261,7 +306,7 @@ class Block(PointModule):
         self._attention_kwargs = attention_kwargs or {}
 
         self.cpe = PointSequential(
-            spconv.SubMConv3d(
+            get_backend().SubMConv3d(
                 channels,
                 channels,
                 kernel_size=3,
@@ -395,17 +440,17 @@ class GridPooling(PointModule):
         # head_indices of each cluster, for reduce attr e.g. code, batch
         head_indices = indices[idx_ptr[:-1]]
         point_dict = Dict(
-            feat=torch_scatter.segment_csr(
+            feat=get_backend().segment_csr(
                 self.proj(point.feat)[indices], idx_ptr, reduce=self.reduce
             ),
-            coord=torch_scatter.segment_csr(
+            coord=get_backend().segment_csr(
                 point.coord[indices], idx_ptr, reduce="mean"
             ),
             grid_coord=grid_coord,
             batch=point.batch[head_indices],
         )
         if "origin_coord" in point.keys():
-            point_dict["origin_coord"] = torch_scatter.segment_csr(
+            point_dict["origin_coord"] = get_backend().segment_csr(
                 point.origin_coord[indices], idx_ptr, reduce="mean"
             )
         if "condition" in point.keys():
@@ -417,13 +462,13 @@ class GridPooling(PointModule):
         if "split" in point.keys():
             point_dict["split"] = point.split
         if "color" in point.keys():
-            point_dict["color"] = torch_scatter.segment_csr(
+            point_dict["color"] = get_backend().segment_csr(
                 point.color[indices], idx_ptr, reduce="mean"
             )
         if "grid_size" in point.keys():
             point_dict["grid_size"] = point.grid_size * self.stride
         if "time" in point.keys():
-            point_dict["time"] = torch_scatter.segment_csr(
+            point_dict["time"] = get_backend().segment_csr(
                 point.time[indices], idx_ptr, reduce="mean"
             )
 
@@ -708,7 +753,7 @@ class PointTransformerV3(PointModule):
             trunc_normal_(module.weight, std=0.02)
             if module.bias is not None:
                 nn.init.zeros_(module.bias)
-        elif isinstance(module, spconv.SubMConv3d):
+        elif get_backend().is_spconv_module(module):
             trunc_normal_(module.weight, std=0.02)
             if module.bias is not None:
                 nn.init.zeros_(module.bias)
@@ -724,7 +769,7 @@ class PointTransformerV3(PointModule):
         if not self.enc_mode:
             point = self.dec(point)
         return point
-    
+
     def forward_encoder(self, data_dict):
         point = Point(data_dict)
         point = self.embedding(point)
@@ -734,7 +779,7 @@ class PointTransformerV3(PointModule):
 
         point = self.enc(point)
         return point
-    
+
     def forward_decoder(self, point):
         return self.dec(point)
 

@@ -86,7 +86,7 @@ def parse_args(skip_command_line=False):
     parser.add_argument('--log_dir', '-ld', type=str, default='train_logs')
     parser.add_argument('--exp_name', '-en', type=str, default=None, help='Experiment name; if not provided, will be auto-generated')
     parser.add_argument('--distributed', '-ddp', type=str, default='false', help='Use DDP')
-    parser.add_argument('--device', choices=['cpu', 'cuda'], default='cuda')
+    parser.add_argument('--device', choices=['cpu', 'cuda', 'xpu'], default='cuda')
     parser.add_argument('--batch_size', '-b', type=int, default=22)
     parser.add_argument('--num_epochs', '-ne', type=int, default=200)
     parser.add_argument('--num_workers', '-nw', type=int, default=16)
@@ -282,5 +282,5 @@ def parse_args(skip_command_line=False):
                 f"Supported splits: {sorted(valid_splits)}"
             )
         args.train_splits = train_splits[0] if len(train_splits) == 1 else train_splits
-    
+
     return args

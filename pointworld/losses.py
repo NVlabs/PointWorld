@@ -16,6 +16,7 @@
 import math
 import torch
 from torch.nn import HuberLoss
+from device_detect import autocast_disabled
 from pointworld import metrics as metrics_utils
 from utils import safe_loss_computation
 
@@ -37,7 +38,7 @@ def compute_single_output_loss(
     per_point_loss = error_term.mean(dim=-1)  # (B,T,NS)
 
     # Apply uncertainty re-weighting (always on)
-    with torch.autocast("cuda", enabled=False):
+    with autocast_disabled(log_var.device):
         # Clamp log-variance directly to keep NLL bounded
         s_min = math.log(var_floor)
         s_max = math.log(var_ceiling)

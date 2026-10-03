@@ -26,6 +26,7 @@ from pointworld import norm_stats as norm_stats_utils
 from pointworld import losses as losses_utils
 from pointworld import metrics as metrics_utils
 from utils import handle_nan_outputs
+from device_detect import autocast_disabled
 
 UNCERTAINTY_LOGVAR_WEIGHT = 1.0
 SIM_VAR_CONST = 1e-3
@@ -265,7 +266,7 @@ class DynamicsPredictor(nn.Module):
         point = self.predictor_model(data_dict)
 
         # Extract features with skip connection and robot global summary
-        with torch.autocast('cuda', enabled=False):
+        with autocast_disabled(device):
             # Extract scene and robot features separately
             scene_mask = ~is_robot[exists.flatten()]
             robot_mask = is_robot[exists.flatten()]
@@ -359,16 +360,16 @@ class BaseModel(nn.Module):
         self.register_buffer("time_steps", torch.linspace(0, 1, self.T))
         with torch.no_grad():
             nn.init.kaiming_normal_(self.robot_type_emb)
-            
+
         # ---------------------------- dynamics predictor ---------------------------- #
         self.dynamics_predictor = DynamicsPredictor(args, self.channels, self.T)
 
         # ---------------------------- normalization stats ---------------------------- #
         self._init_norm_stats()
-        
+
         # Initialize consecutive NaN outputs counter
         self.consecutive_nan_outputs_count = 0
-    
+
     def _init_norm_stats(self) -> None:
         stats = norm_stats_utils.load_norm_stats_from_json(
             self.args,
@@ -408,7 +409,7 @@ class BaseModel(nn.Module):
             self.robot_norm_mean,
             self.robot_norm_var,
         )
-        
+
     def normalize_scene_features(self, scene_features):
         return norm_stats_utils.normalize_scene_features(
             scene_features,
@@ -416,7 +417,7 @@ class BaseModel(nn.Module):
             self.scene_norm_mean,
             self.scene_norm_var,
         )
-    
+
     def encode_scene_features(self, data_dict):
         B = data_dict["scene_flows"].shape[0]
         if not hasattr(self, '_current_domain_indices'):
@@ -457,16 +458,16 @@ class BaseModel(nn.Module):
             [self._domain_to_index[dom] for dom in batch_domains],
             device=self.device, dtype=torch.long
         )
-        
+
         # ---------------------------- scene encoder ---------------------------- #
         if encoded_scene_feat0 is not None:
             scene_feat0 = encoded_scene_feat0
         else:
             scene_feat0 = self.encode_scene_features(data_dict)
-        
+
         # ---------------------------- robot features ---------------------------- #
         robot_feat_seq = self.normalize_robot_features(robot_feat_seq)
-        with torch.autocast('cuda', enabled=False):  # TODO: see if this resolves nan issue
+        with autocast_disabled(self.device):  # TODO: see if this resolves nan issue
             robot_raw = self.robot_proj(robot_feat_seq)  # (B, T, Nr, C)
             time_emb = self.time_embed(self.time_steps.view(1, T)).unsqueeze(2)  # (1, T, 1, C)
             time_emb = time_emb.expand(B, T, Nr, -1)  # (B, T, Nr, C)
@@ -485,25 +486,25 @@ class BaseModel(nn.Module):
         out["scene_relative_norm"] = pred_norm
         out["scene_relative"] = pred
         out["scene_flows"] = scene_coord0.unsqueeze(1) + pred  # (B,T,Ns,3)
-        
+
         # Check outputs for NaN values with consecutive counting logic
         should_skip_batch, self.consecutive_nan_outputs_count = handle_nan_outputs(
-            out, 
-            self.consecutive_nan_outputs_count, 
+            out,
+            self.consecutive_nan_outputs_count,
             context=f"forward pass (batch size: {B})"
         )
-        
+
         # In distributed training, synchronize the skip decision across all ranks
         # to prevent NCCL timeout due to ranks being out of sync
         if self.args.distributed:
             import torch.distributed as dist
             # Convert skip decision to tensor for all_reduce
-            skip_tensor = torch.tensor([1 if should_skip_batch else 0], 
+            skip_tensor = torch.tensor([1 if should_skip_batch else 0],
                                      device=self.device, dtype=torch.int)
             # Use all_reduce with MAX to ensure if any rank wants to skip, all skip
             dist.all_reduce(skip_tensor, op=dist.ReduceOp.MAX, group=self.cpu_pg)
             should_skip_batch = skip_tensor.item() > 0
-        
+
         # Mark whether this output should be skipped due to NaN
         out['_has_nan_outputs'] = should_skip_batch
 
@@ -565,7 +566,7 @@ class BaseModel(nn.Module):
             var_ceiling=VAR_CEILING,
             uncertainty_logvar_weight=UNCERTAINTY_LOGVAR_WEIGHT,
         )
-    
+
     @torch.no_grad()
     def _compute_single_output_metrics(self, output_flows, gt_flows, per_point_loss,
                                     weights, moved, static, pred_exists_supervised,
@@ -584,7 +585,7 @@ class BaseModel(nn.Module):
             var_floor=VAR_FLOOR,
             var_ceiling=VAR_CEILING,
         )
-        
+
     def loss_fn(self, outputs, data_dict, training=True):
         return losses_utils.loss_fn(
             self,
@@ -597,7 +598,7 @@ class BaseModel(nn.Module):
             sim_var_const=SIM_VAR_CONST,
             uncertainty_logvar_weight=UNCERTAINTY_LOGVAR_WEIGHT,
         )
-    
+
     def _internal_loss_fn(self, outputs, data_dict, training=True):
         return losses_utils.internal_loss_fn(
             self,
@@ -610,10 +611,10 @@ class BaseModel(nn.Module):
             sim_var_const=SIM_VAR_CONST,
             uncertainty_logvar_weight=UNCERTAINTY_LOGVAR_WEIGHT,
         )
-    
+
     @torch.no_grad()
-    def _collect_per_domain_metrics(self, 
-                                    data_dict, 
+    def _collect_per_domain_metrics(self,
+                                    data_dict,
                                     output_scene_flows,
                                     gt_scene_flows,
                                     per_point_loss,

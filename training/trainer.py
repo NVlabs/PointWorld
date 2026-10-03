@@ -37,6 +37,8 @@ import math
 from pointworld.base import BaseModel
 from pointworld.checkpoint_contract import apply_model_contract_to_args, read_checkpoint_contract
 from training import checkpointing as checkpointing_utils
+from ptv3.backend import configure as configure_ptv3_backend
+from device_detect import autocast_for_device, xpu_bf16_is_supported
 
 class Trainer:
     def __init__(self, args, inference_only=False, data_info_dict=None):
@@ -65,13 +67,17 @@ class Trainer:
             if changed and self.rank == 0:
                 _print("Applied canonical checkpoint model_contract for model initialization.")
 
-        if torch.cuda.is_available() and torch.cuda.is_bf16_supported():
+        if self.device.type == "xpu" and xpu_bf16_is_supported():
+            self.amp_dtype = torch.bfloat16
+        elif self.device.type == "xpu":
+            self.amp_dtype = torch.float16
+        elif torch.cuda.is_available() and torch.cuda.is_bf16_supported():
             self.amp_dtype = torch.bfloat16
         elif torch.cuda.is_available():
             self.amp_dtype = torch.float16
         else:
             self.amp_dtype = torch.float32
-        
+
         # Norm stats are restored from checkpoint on resume; no manifest handling needed.
 
         # ----------------------------------------------------------------------------------
@@ -110,6 +116,7 @@ class Trainer:
         if self.args.distributed:
             self.cpu_pg = dist.new_group(backend="gloo")      # reuse everywhere
             self.eval_global_keys = None                           # populated once
+        configure_ptv3_backend(self.device)
         self.model = BaseModel(args, data_info_dict, rank=self.rank, cpu_pg=self.cpu_pg)
         self.model.to(self.device)
         # Wrap in DDP if using multiple processes
@@ -127,7 +134,7 @@ class Trainer:
             self._create_optimizer()
         else:
             self.optimizer = None
-        
+
         # ----------------------------------------------------------------------------------
         # Load checkpoint if specified
         # ----------------------------------------------------------------------------------
@@ -158,7 +165,7 @@ class Trainer:
             _print(f'{"Experiment Name":<30}: {self.exp_name}')
             _print(f'{"Wandb ID":<30}: {self.wandb_id}')
             wandb.log(log_dict)
-        
+
         # Initialize consecutive NaN grad norm counter
         self.consecutive_nan_grad_count = 0
 
@@ -172,7 +179,7 @@ class Trainer:
             _print(f'Experiment ID: {exp_name}')
             _print(f'Saving to: {self.save_dir}')
         return self.save_dir
-    
+
     def setup_distributed(self):
         """Initialize Torch Distributed if requested and set device."""
         ### DDP CHANGE ###
@@ -198,7 +205,10 @@ class Trainer:
         np.random.seed(self.args.seed + self.rank)
         torch.manual_seed(self.args.seed + self.rank)
         random.seed(self.args.seed + self.rank)
-        torch.cuda.manual_seed(self.args.seed + self.rank)
+        if self.device.type == "cuda":
+            torch.cuda.manual_seed(self.args.seed + self.rank)
+        elif self.device.type == "xpu":
+            torch.xpu.manual_seed(self.args.seed + self.rank)
         _print(f'Rank {self.rank + 1}/{self.world_size} using device {self.device}')
 
     def setup_wandb(self, exp_name=None):
@@ -225,14 +235,14 @@ class Trainer:
             wandb_id_list = [self.wandb_id]
             dist.broadcast_object_list(wandb_id_list, src=0)
             self.wandb_id = wandb_id_list[0]
-        
+
         return self.exp_name, self.wandb_id
-    
+
     def setup_dataloader(self):
         # Create train / test datasets with DDP slicing
         if self.rank == 0:
             _print('Setting up dataloaders...')
-        
+
         start = time.time()
         train_override_splits = getattr(self.args, "train_splits", None)
         if self.rank == 0 and train_override_splits is not None:
@@ -245,7 +255,7 @@ class Trainer:
             override_splits=train_override_splits,
         )
         if self.rank == 0: _print(f'Train dataset setup took {time.time() - start:.2f}s')
-        
+
         start = time.time()
         self.test_dataloader, _ = build_dataloader(args=self.args, mode='test', rank=self.rank, world_size=self.world_size, force_resampled_eval=True)
         if self.test_dataloader is None:
@@ -257,7 +267,7 @@ class Trainer:
         else:
             self.test_iter = iter(self.test_dataloader)
             if self.rank == 0: _print(f'Test dataset setup took {time.time() - start:.2f}s')
-        
+
         data_info_dict = {}
         # Sample a batch to inspect dimension info
         sample_iter = self.test_iter if self.test_iter is not None else iter(self.train_dataloader)
@@ -286,15 +296,15 @@ class Trainer:
     def load_checkpoint_from_path(self, model_path=None):
         return checkpointing_utils.load_checkpoint_from_path(self, model_path)
 
-    def load_checkpoint(self, checkpoint):     
+    def load_checkpoint(self, checkpoint):
         return checkpointing_utils.load_checkpoint(self, checkpoint)
 
     @torch.no_grad()
     def eval_step(self, dataloader, data_iter, prefix, log_dict=None):
         """
-        • dataloader : the DataLoader you want to sample from  
-        • data_iter  : a *persistent* iterator you keep around  
-        • prefix     : string put in front of every logged key  
+        • dataloader : the DataLoader you want to sample from
+        • data_iter  : a *persistent* iterator you keep around
+        • prefix     : string put in front of every logged key
         """
         self.model.eval()
         if log_dict is None:
@@ -320,7 +330,7 @@ class Trainer:
                 batch = {k: v.to(device, non_blocking=True) if torch.is_tensor(v) else v
                          for k, v in batch.items()}
 
-                with torch.autocast('cuda', dtype=self.amp_dtype):
+                with autocast_for_device(self.device, self.amp_dtype):
                     outputs = self.model(batch, training=False)
                     _, loss_dict = (
                         self.model.module.loss_fn(outputs, batch, training=False)
@@ -366,8 +376,8 @@ class Trainer:
     def train(self):
 
         # Only call GradScaler if AMP
-        scaler = GradScaler('cuda')
-        
+        scaler = GradScaler("xpu" if self.device.type == "xpu" else "cuda")
+
         last_save_batch = 0 if self.args.save_freq > 0 else -1
         # Initialize cadence tracking with negative values to ensure first iteration triggers
         last_eval_batch = -self.args.eval_freq if self.args.eval_freq > 0 else -1
@@ -378,7 +388,7 @@ class Trainer:
                 tepoch = tqdm(total=len(self.train_dataloader),
                               desc=f'Initializing...',  # Will be updated in the loop
                               leave=False)
-            
+
             # Iterate through one epoch using the shared train_iter
             for train_batch_idx in range(len(self.train_dataloader)):
                 # Get next batch from shared iterator
@@ -410,7 +420,10 @@ class Trainer:
                         )
                     if self.args.distributed:
                         dist.barrier()
-                    torch.cuda.empty_cache()
+                    if self.device.type == "cuda":
+                        torch.cuda.empty_cache()
+                    elif self.device.type == "xpu":
+                        torch.xpu.empty_cache()
                     last_eval_batch = adjusted_batch_count
 
                 # save checkpoint when batch count since last save >= save_freq
@@ -436,7 +449,7 @@ class Trainer:
                 self.optimizer.zero_grad(set_to_none=True)
 
                 try:
-                    with torch.autocast(device_type='cuda', dtype=self.amp_dtype):
+                    with autocast_for_device(self.device, self.amp_dtype):
                         outputs = self.model(train_batch, training=True)
 
                         # Check if outputs contain NaN and should be skipped
@@ -481,7 +494,7 @@ class Trainer:
 
                     # Final check for NaN in model parameters after optimizer step
                     check_model_parameters_for_nan(self.model, f"after optimizer step (epoch {self.epoch_count:.3f}, batch {train_batch_idx})")
-                
+
                 except NaNDetectionError as nan_error:
                     # Handle NaN detection error
                     if self.rank == 0:
@@ -496,16 +509,16 @@ class Trainer:
                         _print("Saving emergency checkpoint...")
                         save_dir = self.save_checkpoint(log_dict)
                         _print(f"Emergency checkpoint saved to {save_dir}")
-                        
+
                         _print("="*100)
                         _print("Training stopped due to NaN detection.")
                         _print("Debug files saved to ./debug/ directory.")
                         _print("="*100)
-                    
+
                     # Ensure all ranks are synchronized before exiting
                     if self.args.distributed:
                         dist.barrier()
-                    
+
                     # Re-raise the error to stop training
                     raise nan_error
 
@@ -555,11 +568,11 @@ class Trainer:
                     if self.rank == 0:
                         tepoch.close()
                     return 0
-            
+
             # Close progress bar for this epoch (rank 0 only)
             if self.rank == 0:
                 tepoch.close()
-            
+
         return 0
 
     @torch.no_grad()
@@ -571,7 +584,7 @@ class Trainer:
         # barrier to ensure all processes have finished training
         if self.args.distributed:
             dist.barrier()
-        
+
         # Switch to eval mode
         self.model.eval()
 
@@ -579,21 +592,21 @@ class Trainer:
         def accumulate_metrics(dataloader, prefix):
             metrics = defaultdict(lambda: torch.tensor(0.0, device=self.device))
             counts = defaultdict(lambda: torch.tensor(0, device=self.device))
-            
+
             # Only show progress bar on rank 0
             iterator = dataloader
             if self.rank == 0:
                 iterator = tqdm(dataloader, desc=f'Eval {prefix}', total=max_num_batches, leave=False)
-            
+
             for i, batch in enumerate(iterator):
                 if i >= max_num_batches:
                     break
                 batch = {k: v.to(self.device, non_blocking=True) if isinstance(v, torch.Tensor) else v for k, v in batch.items()}
                 # Forward pass
-                with torch.autocast(device_type='cuda', dtype=self.amp_dtype):
+                with autocast_for_device(self.device, self.amp_dtype):
                     outputs = self.model(batch, training=False)
                     total_loss, loss_dict = self.model.module.loss_fn(outputs, batch, training=False) if self.args.distributed else self.model.loss_fn(outputs, batch, training=False)
-                
+
                 # Accumulate batch metrics
                 for k, v in loss_dict.items():
                     if isinstance(v, torch.Tensor):

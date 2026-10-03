@@ -58,6 +58,7 @@ If you find this work useful in your research, please cite using the following B
 
 - [Important Notes](#important-notes)
 - [Setup](#setup)
+- [Intel XPU Support](#intel-xpu-support)
 - [Datasets And Checkpoints](#datasets-and-checkpoints)
 - [Training](#training)
 - [Evaluation](#evaluation)
@@ -121,6 +122,87 @@ python -m pip install networkx==3.4.2 --no-deps
 Dependency layout:
 - `environments/requirements.txt`: canonical base dependency list for train/eval.
 - `environments/train_eval_viz.yml`: optional visualization extras (`matplotlib`, `open3d`, `viser`).
+
+<a id="intel-xpu-support"></a>
+## Intel XPU Support
+
+PointWorld supports single-device training, inference, and evaluation on Intel
+GPUs through PyTorch XPU. CUDA remains the default path. Select XPU explicitly
+with `--device xpu`.
+
+### Prerequisites
+
+- Linux x86_64 with the Intel GPU driver, Compute Runtime, and Level Zero stack installed.
+- A PyTorch build with XPU support. Verify it before running PointWorld:
+
+```bash
+python - <<'PY'
+import torch
+
+print("PyTorch:", torch.__version__)
+print("XPU available:", hasattr(torch, "xpu") and torch.xpu.is_available())
+PY
+```
+
+The CUDA-only entries in `environments/requirements.txt` (`torch`,
+`torchvision`, `torch-scatter`, and `spconv-cu124`) should not be installed in
+the XPU environment. Install compatible XPU wheels first, then install the
+remaining Python dependencies:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install torch torchvision \
+  --index-url https://download.pytorch.org/whl/xpu
+python -m pip install \
+  addict h5py msgpack msgspec numba numpy opencv-python pyyaml \
+  pytorch_kinematics scipy torchmetrics tqdm transforms3d trimesh \
+  urdfpy wandb webdataset timm
+```
+
+Do not install `flash-attn`, `spconv-cu124`, or the CUDA `torch-scatter`
+wheel for the XPU path. PTv3 uses the XPU-compatible implementations bundled
+in [ptv3/spconv_shim.py](ptv3/spconv_shim.py) and
+[ptv3/torch_scatter_shim.py](ptv3/torch_scatter_shim.py).
+
+### Run Training Or Evaluation
+
+Add `--device xpu` to the existing training and evaluation commands:
+
+```bash
+python train.py \
+  --device xpu \
+  --domains=droid \
+  --data_dirs=/path/to/droid/wds \
+  --norm_stats_path=stats/droid \
+  --batch_size=<BATCH_SIZE> \
+  --num_workers=<NUM_WORKERS> \
+  --eval_num_workers=<EVAL_NUM_WORKERS> \
+  --eval_freq=-1
+```
+
+```bash
+python eval.py \
+  --device xpu \
+  --model_path=pretrained_checkpoints/large-droid/model-best.pt \
+  --domains=droid \
+  --data_dirs=/path/to/droid/wds \
+  --batch_size=1 \
+  --eval_num_batches=100
+```
+
+The default remains `--device cuda`; omitting `--device` does not select the
+XPU backend. CUDA continues to use native `spconv`, `torch-scatter`, and
+FlashAttention. XPU selects the device-aware backend in
+[ptv3/backend.py](ptv3/backend.py), uses PyTorch scaled-dot-product attention,
+and uses pure-PyTorch sparse/scatter shims. This preserves checkpoint
+compatibility but can be slower than the native CUDA kernels.
+
+The trainer selects BF16 when the XPU reports BF16 support and otherwise uses
+FP16. The XPU scene encoder uses the existing native DINOv3 `.pth` checkpoint
+under `third_party/dinov3/checkpoints`. The current XPU path is single-device;
+the existing `--distributed` configuration remains the CUDA/NCCL path.
 
 ### Third-Party Dependency (DINOv3)
 

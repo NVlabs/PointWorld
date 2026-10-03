@@ -6,7 +6,7 @@ Please cite our work if the code is helpful to you.
 """
 
 import torch
-import spconv.pytorch as spconv
+from .backend import get_backend
 from addict import Dict
 
 from .serialization import encode
@@ -68,7 +68,7 @@ class Point(Dict):
             # Adaptive measure the depth of serialization cube (length = 2 ^ depth)
             depth = int(self.grid_coord.max() + 1).bit_length()
         self[f"{prefix}serialized_depth"] = depth
-        
+
         # Maximum bit length for serialization code is 63 (int64)
         assert depth * 3 + len(self.offset).bit_length() <= 63
         # Here we follow OCNN and set the depth limitation to 16 (48bit) for the point position.
@@ -132,7 +132,7 @@ class Point(Dict):
             sparse_shape = torch.add(
                 torch.max(self.grid_coord, dim=0).values, pad
             ).tolist()
-        sparse_conv_feat = spconv.SparseConvTensor(
+        sparse_conv_feat = get_backend().SparseConvTensor(
             features=self.feat,
             indices=torch.cat(
                 [self.batch.unsqueeze(-1).int(), self.grid_coord.int()], dim=1

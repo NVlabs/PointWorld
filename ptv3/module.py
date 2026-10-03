@@ -1,9 +1,10 @@
 import sys
 import torch.nn as nn
-import spconv.pytorch as spconv
 from collections import OrderedDict
 import torch
+from .backend import get_backend
 from .structure import Point
+from device_detect import autocast_disabled
 
 
 class PointModule(nn.Module):
@@ -57,19 +58,20 @@ class PointSequential(PointModule):
         self.add_module(name, module)
 
     def forward(self, input):
+        backend = get_backend()
         for k, module in self._modules.items():
             # Point module
             if isinstance(module, PointModule):
                 input = module(input)
             # Spconv module
-            elif spconv.modules.is_spconv_module(module):
+            elif backend.is_spconv_module(module):
                 # Force spconv module to NOT use amp
                 if isinstance(input, Point):
-                    with torch.autocast('cuda', enabled=False):
+                    with autocast_disabled():
                         input.sparse_conv_feat = module(input.sparse_conv_feat)
                         input.feat = input.sparse_conv_feat.features
                 else:
-                    with torch.autocast('cuda', enabled=False):
+                    with autocast_disabled():
                         input = module(input)
             # PyTorch module
             else:
@@ -79,7 +81,7 @@ class PointSequential(PointModule):
                         input.sparse_conv_feat = input.sparse_conv_feat.replace_feature(
                             input.feat
                         )
-                elif isinstance(input, spconv.SparseConvTensor):
+                elif isinstance(input, backend.SparseConvTensor):
                     if input.indices.shape[0] != 0:
                         input = input.replace_feature(module(input.features))
                 else:

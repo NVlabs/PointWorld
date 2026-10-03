@@ -17,6 +17,7 @@ from pathlib import Path
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from device_detect import autocast_disabled
 
 class SceneEncoder2D(nn.Module):
     """DINOv3-based 2-D scene encoder that projects 3-D points to camera views."""
@@ -27,7 +28,7 @@ class SceneEncoder2D(nn.Module):
         self.device = args.device
         self.channels = channels
         self.repo_root = Path(__file__).resolve().parent
-        
+
         # Fixed DINOv3 ViT-L16 multi-layer configuration for release.
         self.model_name = "dinov3_vitl16"
         repo, source = self._resolve_dinov3_repo()
@@ -41,17 +42,17 @@ class SceneEncoder2D(nn.Module):
 
         self.selected_layers = [4, 11, 17, 23]
         in_dim = self.feat_dim * len(self.selected_layers)
-        
+
         # ---------- backbone ----------
         self._load_backbone()
-        
+
         # --- projection head (now uses in_dim) ------------------------
         self.feat_proj = nn.Linear(in_dim, channels)
         self._freeze_encoder()
         # Conditionally enable compile on the small wrapper only if not disabled
         if not args.disable_compile:
             self._maybe_no_grad = torch.compile(self._maybe_no_grad)
-    
+
     def _load_backbone(self):
         """Load the fixed DINOv3 backbone."""
         model_name = self.model_name
@@ -98,7 +99,7 @@ class SceneEncoder2D(nn.Module):
             f"{weights_path} or place a single file matching 'dinov3_vitl16_pretrain*.pth' "
             "under third_party/dinov3/checkpoints."
         )
-    
+
     def _load_model_distributed(self, load_func):
         """Helper for distributed model loading with synchronization."""
         import torch.distributed as dist
@@ -110,17 +111,41 @@ class SceneEncoder2D(nn.Module):
         if self.rank != 0:
             # Other ranks can now safely load
             self.dinov3 = load_func()
-    
+
     def _load_dinov3_model(self, config, model_name):
-        """Load DINOv3 model via torch.hub."""
-        return torch.hub.load(
-            config['repo'], 
-            model_name, 
+        """Load DINOv3 model via torch.hub.
+
+        CUDA uses the original hub weight-loading path. XPU builds the
+        backbone without hub weights and loads the local native state dict
+        directly.
+        """
+        if self.device != "xpu":
+            return torch.hub.load(
+                config['repo'],
+                model_name,
+                source=config['source'],
+                weights=config['weights'],
+                trust_repo=True,
+            )
+
+        model = torch.hub.load(
+            config['repo'],
+            model_name,
             source=config['source'],
-            weights=config['weights'],
-            trust_repo=True
+            pretrained=False,
+            trust_repo=True,
         )
-        
+        state = torch.load(config['weights'], map_location="cpu")
+        # Buffers such as rope_embed.periods and qkv.bias_mask are deterministic
+        # and set by the model's own init_weights, so they are not in the file.
+        missing, unexpected = model.load_state_dict(state, strict=False)
+        missing = [k for k in missing if "rope_embed.periods" not in k and "bias_mask" not in k]
+        if missing or unexpected:
+            raise RuntimeError(
+                f"DINOv3 weight load mismatch: missing={missing[:8]} unexpected={unexpected[:8]}"
+            )
+        return model
+
     def _freeze_encoder(self):
         for p in self.dinov3.parameters():
             p.requires_grad_(False)
@@ -141,7 +166,7 @@ class SceneEncoder2D(nn.Module):
     def forward(self, scene_coord, scene_exists, camera_data):
         """
         Optimized forward method that directly samples from patch features without interpolation.
-        
+
         Args
         ----
         scene_coord : (B, Ns, 3)
@@ -175,12 +200,12 @@ class SceneEncoder2D(nn.Module):
         patch_h = H // patch_size
         patch_w = W // patch_size
         rgb_backbone_input = rgb_input  # keep original resolution
-        
+
         # Apply ImageNet normalization (fixed for release).
         mean = torch.tensor([0.485, 0.456, 0.406], device=rgb_backbone_input.device, dtype=rgb_backbone_input.dtype).view(1, 3, 1, 1)
         std = torch.tensor([0.229, 0.224, 0.225], device=rgb_backbone_input.device, dtype=rgb_backbone_input.dtype).view(1, 3, 1, 1)
         rgb_backbone_input = (rgb_backbone_input - mean) / std
-        
+
         def _extract_features():
             feats = self.dinov3.get_intermediate_layers(
                 rgb_backbone_input,              # (B*C, 3, H, W)
@@ -195,7 +220,7 @@ class SceneEncoder2D(nn.Module):
             return patch_tokens
 
         features_or_tokens = self._maybe_no_grad(_extract_features)
-        
+
         patch_tokens = features_or_tokens
         assert patch_h * patch_w == patch_tokens.shape[1], \
             f"Token grid mismatch: {patch_h}x{patch_w} != {patch_tokens.shape[1]} tokens"
@@ -207,7 +232,7 @@ class SceneEncoder2D(nn.Module):
         pts_h = pts_h.unsqueeze(1).expand(-1, C, -1, -1)                    # (B,C,Ns,4)
 
         # world -> cam and cam -> pixels in FP32 to avoid FP16 overflow/inf
-        with torch.autocast('cuda', enabled=False):
+        with autocast_disabled(self.device):
             world2cam = extr.float()  # (B,C,4,4)
             intr_f    = intr.float()  # (B,C,3,3)
             pts_h_f   = pts_h.float() # (B,C,Ns,4)
@@ -254,14 +279,14 @@ class SceneEncoder2D(nn.Module):
         thr_front  = 0.5 * self.args.depth_threshold
         depth_ok = (proj_depth <= depth_samp + thr_behind) & \
                 (proj_depth >= depth_samp - thr_front)
-        
+
         visible  = in_img & depth_ok                                        # (B,C,Ns)
         visible = visible & cam_exists.unsqueeze(-1)
 
         # ============ 5. Feature sampling (simplified with shared normalized grid) ============
         pixels_flat = pixels.view(B * C, Ns, 2)  # (B*C, Ns, 2)
         visible_flat = visible.view(B * C, Ns)    # (B*C, Ns)
-        
+
         # ViT feature grid: build directly in token coordinates (no-resize path)
         ps = float(patch_size)
         # Effective image region that has tokens
@@ -323,31 +348,31 @@ class SceneEncoder2D(nn.Module):
     def _maybe_no_grad(self, fn):
         with torch.no_grad():
             return fn()
-    
+
     # --------------------------------------------------------------------------
     # API compatibility methods for profiling and debugging
     # --------------------------------------------------------------------------
     def _extract_camera_data(self, data_dict):
         """Extract camera data from data_dict by finding matching keys with standardized prefixes."""
         camera_data = {}
-        
+
         # Find all standardized camera prefixes (cam0, cam1, cam2, etc.)
         rgb_keys = [k for k in data_dict.keys() if k.endswith('_initial_rgb')]
-        
+
         # Extract standardized prefixes (should be cam0, cam1, etc.)
         prefixes = set()
         for k in rgb_keys:
             prefix = k.replace('_initial_rgb', '')
             if prefix.startswith('cam'):  # Only accept standardized camera prefixes
                 prefixes.add(prefix)
-        
+
         for prefix in prefixes:
             rgb_key = f"{prefix}_initial_rgb"
             depth_key = f"{prefix}_initial_depth"
             intrinsic_key = f"{prefix}_intrinsic"
             extrinsic_key = f"{prefix}_extrinsic"
             exists_key = f"{prefix}_exists"
-            
+
             if all(k in data_dict for k in [rgb_key, depth_key, intrinsic_key, extrinsic_key]):
                 entry = {
                     'rgb': data_dict[rgb_key],
@@ -358,9 +383,9 @@ class SceneEncoder2D(nn.Module):
                 if exists_key in data_dict:
                     entry['exists'] = data_dict[exists_key]
                 camera_data[prefix] = entry
-        
+
         return camera_data
-    
+
 
 
 class SceneFeatureEncoder(nn.Module):
